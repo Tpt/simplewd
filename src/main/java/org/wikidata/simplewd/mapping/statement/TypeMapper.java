@@ -249,7 +249,7 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
                             }).toArray(ItemIdValue[]::new);
                 }
             } else {
-                LOGGER.error("Found something that is not an item from an item id:" + document.getEntityId().toString());
+                LOGGER.error("Found something that is not an item from an item id: " + itemId.toString());
             }
         } catch (MediaWikiApiErrorException e) {
             LOGGER.error("Wikidata API error: " + e.getMessage(), e);
