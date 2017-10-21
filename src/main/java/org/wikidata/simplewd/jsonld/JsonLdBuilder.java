@@ -17,13 +17,18 @@
 package org.wikidata.simplewd.jsonld;
 
 import com.google.common.collect.Sets;
+import com.vividsolutions.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wikidata.simplewd.api.KartographerAPI;
 import org.wikidata.simplewd.model.Claim;
+import org.wikidata.simplewd.model.Namespaces;
 import org.wikidata.simplewd.model.Resource;
+import org.wikidata.simplewd.model.value.GeoValue;
 import org.wikidata.simplewd.model.value.LocaleStringValue;
 import org.wikidata.simplewd.model.value.Value;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -94,10 +99,29 @@ public class JsonLdBuilder {
             }
         });
 
+        buildGeoValueFromKartographer(resource)
+                .ifPresent(geoValue -> propertyValues.put("geo", geoValue));
+
         return new JsonLdRoot<>(context, new Entity(
                 resource.getIRI(),
                 resource.getTypes().collect(Collectors.toList()),
                 propertyValues
         ));
+    }
+
+    private Optional<Object> buildGeoValueFromKartographer(Resource resource) {
+        try {
+            //We only do geo shape lookup for Places in order to avoid unneeded requests
+            if (resource.getTypes().anyMatch(type -> type.equals("Place"))) {
+                Geometry shape = KartographerAPI.getInstance()
+                        .getShapeForItemId(Namespaces.expand(resource.getIRI()));
+                if (!shape.isEmpty()) {
+                    return Optional.of(GeoValue.buildGeoValue(shape));
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return Optional.empty();
     }
 }
