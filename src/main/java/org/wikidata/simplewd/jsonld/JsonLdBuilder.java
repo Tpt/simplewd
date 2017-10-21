@@ -43,8 +43,9 @@ public class JsonLdBuilder {
             "deathDate", "deathPlace", "description",
             "flightNumber",
             "gender", "geo",
-            "iataCode", "icaoCode",
-            "name",
+            "iataCode", "icaoCode", "isicV4", "isrcCode", "iswcCode",
+            "leiCode",
+            "naics", "name",
             "url"
     ); //TODO: schema
     private static final Set<String> PROPERTIES_WITH_BY_LANGUAGE_CONTAINER = Sets.newHashSet("alternateName", "description", "name");

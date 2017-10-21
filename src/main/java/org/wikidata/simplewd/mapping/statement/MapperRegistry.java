@@ -53,18 +53,23 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P50"), new ItemIdStatementMapper("author"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P57"), new ItemIdStatementMapper("director"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P69"), new ItemIdStatementMapper("alumniOf"));
+        //TODO: P86 composer vs musicBy
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P98"), new ItemIdStatementMapper("editor"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P108"), new ItemIdStatementMapper("worksFor"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P110"), new ItemIdStatementMapper("illustrator"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P112"), new ItemIdStatementMapper("founder"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P123"), new ItemIdStatementMapper("publisher"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P131"), new ItemIdStatementMapper("containedInPlace"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P136"), new ItemIdStatementMapper("genre"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P144"), new ItemIdStatementMapper("isBasedOn"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P150"), new ItemIdStatementMapper("containsPlace"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P161"), new ItemIdStatementMapper("actor"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P162"), new ItemIdStatementMapper("producer"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P166"), new ItemIdStatementMapper("award"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P170"), new ItemIdStatementMapper("creator"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P175"), new ItemIdStatementMapper("byArtist"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P176"), new ItemIdStatementMapper("provider"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P186"), new ItemIdStatementMapper("material"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P212"), new ISBNStatementMapper());
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P214"), new ExternalIdentifierStatementMapper("http://viaf.org/viaf/$1", "[1-9]\\d(\\d{0,7}|\\d{17,20})"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P229"), new StringStatementMapper("iataCode", "[A-Z0-9]{2}"));
@@ -73,6 +78,7 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P238"), new StringStatementMapper("iataCode", "[A-Z]{3}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P239"), new StringStatementMapper("icaoCode", "([A-Z]{2}|[CKY][A-Z0-9])[A-Z0-9]{2}"));
         //TODO: P249 tickerSymbol have ISO15022 compliant code
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P272"), new ItemIdStatementMapper("productionCompany"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P275"), new ItemIdStatementMapper("license"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P276"), new ItemIdStatementMapper("location"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P361"), new ItemIdStatementMapper("isPartOf"));
@@ -95,6 +101,7 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P646"), new ExternalIdentifierStatementMapper("http://g.co/kg$1", "(/m/0[0-9a-z_]{2,6}|/m/01[0123][0-9a-z_]{5})"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P655"), new ItemIdStatementMapper("translator"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P674"), new ItemIdStatementMapper("character"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P676"), new ItemIdStatementMapper("lyricist"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P734"), new ItemIdStatementMapper("familyName"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P735"), new ItemIdStatementMapper("givenName"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P767"), new ItemIdStatementMapper("contributor"));
@@ -106,7 +113,9 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P966"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/label/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P982"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/area/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1004"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/place/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
+        //TODO: P1191: firstPerformance move the statement to an Event using qualifiers
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1243"), new StringStatementMapper("isrcCode", "[A-Z]{2}[A-Z0-9]{3}[0-9]{7}"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1278"), new StringStatementMapper("leiCode", "[0-9A-Z]{18}[0-9]{2}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1281"), new ExternalIdentifierStatementMapper("http://www.flickr.com/places/info/$1", "[1-9][0-9]{0,9}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1330"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/instrument/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1407"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/series/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
@@ -114,6 +123,8 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1657"), new ItemIdStatementMapper("contentRating"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1716"), new ItemIdStatementMapper("brand"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1733"), new ExternalIdentifierStatementMapper("http://store.steampowered.com/app/$1", "[1-9]\\d{0,5}"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1796"), new StringStatementMapper("isicV4", "([A-U]|\\d{2,4})"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1827"), new StringStatementMapper("iswcCode", "T-[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}-[0-9]"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1874"), new ExternalIdentifierStatementMapper("http://www.netflix.com/title/$1", "\\d{6,8}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1953"), new ExternalIdentifierStatementMapper("http://www.discogs.com/artist/$1", "[1-9][0-9]*"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1954"), new ExternalIdentifierStatementMapper("http://www.discogs.com/master/$1", "[1-9][0-9]*"));
@@ -135,6 +146,7 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P3090"), new StringStatementMapper("flightNumber", "([A-Z]{2,3}|[A-Z][0-9]|[0-9][A-Z])\\d{1,4}[A-Z]?"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P3108"), new ExternalIdentifierStatementMapper("http://www.yelp.com/biz/$1", "[^\\s]+")); //TODO: bad validation
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P3192"), new ExternalIdentifierStatementMapper("http://www.last.fm/music/$1", "[^\\s]+")); //TODO: bad validation
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P3224"), new StringStatementMapper("naics", "\\d{2,6}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P3267"), new ExternalIdentifierStatementMapper("http://www.flickr.com/photos/$1", "[a-zA-Z0-9@]+"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P3207"), new ExternalIdentifierStatementMapper("http://vine.co/u/$1", "\\d+"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P3417"), new ExternalIdentifierStatementMapper("http://www.quora.com/topic/$1", "[^\\s\\/]+"));
