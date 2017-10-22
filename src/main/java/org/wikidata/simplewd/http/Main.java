@@ -20,32 +20,26 @@ import io.javalin.HaltException;
 import io.javalin.Javalin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wikidata.simplewd.api.WikidataAPI;
 import org.wikidata.simplewd.http.html.EntityRenderer;
 import org.wikidata.simplewd.http.html.MainRenderer;
 import org.wikidata.simplewd.http.html.SwaggerRenderer;
 import org.wikidata.simplewd.jsonld.JsonLdBuilder;
-import org.wikidata.simplewd.mapping.ItemMapper;
 import org.wikidata.simplewd.model.Entity;
+import org.wikidata.simplewd.model.EntityLookup;
 import org.wikidata.simplewd.model.Namespaces;
-import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
-import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
-import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
-import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
-import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-    private static final Pattern ITEM_URI_PATTERN = Pattern.compile("^wd:Q\\d+$");
     private static final JsonLdBuilder JSON_LD_BUILDER = new JsonLdBuilder();
 
-    private ItemMapper itemMapper;
+    private EntityLookup entityLookup;
 
     private Main() throws IOException {
-        itemMapper = new ItemMapper((new DumpProcessingController("wikidatawiki")).getSitesInformation());
+        entityLookup = new WikidataAPI();
     }
 
     public static void main(String[] args) throws IOException {
@@ -79,28 +73,13 @@ public class Main {
 
     private Entity getResource(String id) {
         LOGGER.info("Retrieving: " + id);
-
-        id = Namespaces.reduce(id);
-        if (!ITEM_URI_PATTERN.matcher(id).matches()) {
-            throw new HaltException(400, "This entity URI is not supported: " + Namespaces.expand(id));
-        }
-
         try {
-            EntityDocument entity = WikibaseDataFetcher.getWikidataDataFetcher().getEntityDocument(id.replace("wd:", ""));
-            if (entity == null) {
-                throw new HaltException(404, "Entity not found");
-            } else if (entity instanceof ItemDocument) {
-                return itemMapper.map((ItemDocument) entity);
-            } else {
-                throw new HaltException(400, "Not supported entity type");
-            }
-        } catch (MediaWikiApiErrorException e) {
-            if (e.getErrorCode().equals("no-such-entity")) {
-                throw new HaltException(404, "Entity not found");
-            } else {
-                LOGGER.warn(e.getMessage(), e);
-                throw new HaltException(500);
-            }
+            return entityLookup.getEntityForIRI(id).orElseThrow(() -> new HaltException(404, Namespaces.expand(id) + " not found"));
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new HaltException(500);
+        } catch (IllegalArgumentException e) {
+            throw new HaltException(400, Namespaces.expand(id) + " is not a supported entity");
         }
     }
 }
