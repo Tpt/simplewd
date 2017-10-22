@@ -20,7 +20,9 @@ import org.wikidata.simplewd.model.value.ResourceValue;
 import org.wikidata.simplewd.model.value.Value;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -47,6 +49,18 @@ public class Resource {
 
     public Stream<Claim> getClaims() {
         return claims.stream();
+    }
+
+    public Set<String> getProperties() {
+        return claims.stream().map(Claim::getProperty).collect(Collectors.toSet());
+    }
+
+    public Optional<Value> getValue(String property) {
+        return claims.stream().filter(claim -> claim.getProperty().equals(property)).findAny().map(Claim::getValue);
+    }
+
+    public Stream<Value> getValues(String property) {
+        return claims.stream().filter(claim -> claim.getProperty().equals(property)).map(Claim::getValue);
     }
 
     public void addClaim(Claim claim) {

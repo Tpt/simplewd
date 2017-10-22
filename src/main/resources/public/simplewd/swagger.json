@@ -1,0 +1,49 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Documentation of the SimpleWD API",
+    "version": "0.1.0",
+    "title": "SimpleWD"
+  },
+  "host": "tools.wmflabs.org",
+  "basePath": "/simplewd/v0",
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/entity/{id}": {
+      "get": {
+        "tags": [
+          "entity"
+        ],
+        "summary": "Find entity by URI",
+        "description": "Returns a single entity",
+        "produces": [
+          "application/ld+json",
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "shortened URI of the entity to return like 'wd:Q42'",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Not supported URI provided"
+          },
+          "404": {
+            "description": "Entity not found"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,120 @@
+/*
+ * Copyright (C) 2017 Simple WD Developers
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@media (max-width: 1000px) {
+    main {
+        width: 100%;
+    }
+}
+
+@media (min-width: 1000px) {
+    main {
+        margin: auto;
+        width: 1000px;
+    }
+}
+
+.mdc-toolbar-fixed-adjust {
+    padding-top: 2em;
+}
+
+.mdl-data-table {
+    margin-top: 2em;
+    width: 100%;
+    word-wrap: break-word;
+    display: inline-block;
+    overflow: auto;
+}
+
+/*Tables from https://github.com/google/material-design-lite/tree/88872e672e41c56af0a78a35b34373b8c4a8c49d/src/data-table */
+.mdl-data-table {
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-collapse: collapse;
+    white-space: nowrap;
+    font-size: 13px;
+    background-color: rgb(255, 255, 255);
+}
+
+.mdl-data-table thead {
+    padding-bottom: 3px;
+}
+
+.mdl-data-table thead .mdl-data-table__select {
+    margin-top: 0;
+}
+
+.mdl-data-table tbody tr {
+    position: relative;
+    height: 48px;
+    transition-duration: 0.28s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-property: background-color;
+}
+
+.mdl-data-table tbody tr.is-selected {
+    background-color: #e0e0e0;
+}
+
+.mdl-data-table tbody tr:hover {
+    background-color: #eeeeee;
+}
+
+.mdl-data-table td, .mdl-data-table th {
+    padding: 0 18px 12px 18px;
+}
+
+.mdl-data-table td:first-of-type, .mdl-data-table th:first-of-type {
+    padding-left: 24px;
+}
+
+.mdl-data-table td:last-of-type, .mdl-data-table th:last-of-type {
+    padding-right: 24px;
+}
+
+.mdl-data-table td {
+    position: relative;
+    vertical-align: middle;
+    height: 48px;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    padding-top: 12px;
+    box-sizing: border-box;
+}
+
+.mdl-data-table td .mdl-data-table__select {
+    vertical-align: middle;
+}
+
+.mdl-data-table th {
+    text-overflow: ellipsis;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 24px;
+    letter-spacing: 0;
+    height: 48px;
+    color: rgba(0, 0, 0, 0.54);
+    padding-bottom: 8px;
+    box-sizing: border-box;
+}
+
+.mdl-data-table__select {
+    width: 16px;
+}
+
+.mdl-data-table__cell--non-numeric.mdl-data-table__cell--non-numeric {
+    text-align: left;
+}

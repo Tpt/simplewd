@@ -20,11 +20,13 @@ import io.javalin.HaltException;
 import io.javalin.Javalin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wikidata.simplewd.jsonld.Entity;
+import org.wikidata.simplewd.http.html.EntityRenderer;
+import org.wikidata.simplewd.http.html.MainRenderer;
+import org.wikidata.simplewd.http.html.SwaggerRenderer;
 import org.wikidata.simplewd.jsonld.JsonLdBuilder;
-import org.wikidata.simplewd.jsonld.JsonLdRoot;
 import org.wikidata.simplewd.mapping.ItemMapper;
 import org.wikidata.simplewd.model.Namespaces;
+import org.wikidata.simplewd.model.Resource;
 import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
@@ -32,24 +34,42 @@ import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
     private static final Pattern ITEM_URI_PATTERN = Pattern.compile("^wd:Q\\d+$");
+    private static final JsonLdBuilder JSON_LD_BUILDER = new JsonLdBuilder();
 
     private ItemMapper itemMapper;
-    private JsonLdBuilder jsonLdBuilder;
 
     private Main() throws IOException {
         itemMapper = new ItemMapper((new DumpProcessingController("wikidatawiki")).getSitesInformation());
-        jsonLdBuilder = new JsonLdBuilder();
     }
 
     public static void main(String[] args) throws IOException {
         Main main = new Main();
-        Javalin app = Javalin.start(getPort());
-        app.get("/simplewd/v0/entity/:id", ctx -> ctx.json(main.getEntity(ctx.param("id"))));
+        Javalin.create()
+                .enableCorsForOrigin("*")
+                .enableStaticFiles("/public")
+                .get("", ctx -> ctx.redirect("/simplewd"))
+                .get("/simplewd", ctx -> ctx.html((new MainRenderer()).render()))
+                .get("/simplewd/swagger.html", ctx -> ctx.html((new SwaggerRenderer()).render()))
+                .get("/simplewd/entity/:id", ctx -> ctx.redirect("/simplewd/v0/entity/" + ctx.param("id")))
+                .get("/simplewd/v0/entity/:id", ctx -> {
+                    String accept = ctx.header("Accept");
+                    if (accept != null && accept.contains("text/html")) {
+                        ctx.html((new EntityRenderer(Locale.ENGLISH)).render(main.getResource(ctx.param("id"))));
+                    } else {
+                        ctx.json(JSON_LD_BUILDER.buildEntity(main.getResource(ctx.param("id"))));
+                        if (accept != null && accept.contains("application/ld+json")) {
+                            ctx.contentType("application/ld+json");
+                        }
+                    }
+                })
+                .port(getPort())
+                .start();
     }
 
     private static int getPort() {
@@ -57,10 +77,12 @@ public class Main {
         return (port != null) ? Integer.valueOf(port) : 7000;
     }
 
-    private JsonLdRoot<Entity> getEntity(String id) {
+    private Resource getResource(String id) {
+        LOGGER.info("Retrieving: " + id);
+
         id = Namespaces.reduce(id);
         if (!ITEM_URI_PATTERN.matcher(id).matches()) {
-            throw new HaltException(404, "This entity URI is not supported: " + Namespaces.expand(id));
+            throw new HaltException(400, "This entity URI is not supported: " + Namespaces.expand(id));
         }
 
         try {
@@ -68,9 +90,9 @@ public class Main {
             if (entity == null) {
                 throw new HaltException(404, "Entity not found");
             } else if (entity instanceof ItemDocument) {
-                return jsonLdBuilder.buildEntity(itemMapper.map((ItemDocument) entity));
+                return itemMapper.map((ItemDocument) entity);
             } else {
-                throw new HaltException(404, "Not supported entity type");
+                throw new HaltException(400, "Not supported entity type");
             }
         } catch (MediaWikiApiErrorException e) {
             if (e.getErrorCode().equals("no-such-entity")) {

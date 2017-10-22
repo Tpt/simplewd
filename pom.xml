@@ -28,6 +28,7 @@
         <jdkVersion>1.8</jdkVersion>
         <commonsValidatorVersion>1.6</commonsValidatorVersion>
         <guavaVersion>23.2-jre</guavaVersion>
+        <j2htmlVersion>1.2.0</j2htmlVersion>
         <javalinVersion>0.5.3</javalinVersion>
         <jtsVersion>1.14.0</jtsVersion>
         <junitVersion>4.12</junitVersion>
@@ -45,6 +46,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guavaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.j2html</groupId>
+            <artifactId>j2html</artifactId>
+            <version>${j2htmlVersion}</version>
         </dependency>
         <dependency>
             <groupId>com.vividsolutions</groupId>

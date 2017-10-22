@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package org.wikidata.simplewd.model.value;
-
-public interface Value extends Comparable<Value> {
-    String getType();
-
-    boolean hasPlainSerialization();
-
-    int hashCode();
-
-    boolean equals(Object value);
-
-    String toString();
-
-    @Override
-    default int compareTo(Value o) {
-        return toString().compareTo(o.toString());
-    }
-}
+window.onload = function () {
+    window.ui = SwaggerUIBundle({
+        url: window.location.protocol + "//" + window.location.host + "/simplewd/swagger.json",
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+        ],
+        plugins: [
+            SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout"
+    })
+};

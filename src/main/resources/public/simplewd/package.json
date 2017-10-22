@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "jquery": "~3.2",
+    "material-components-web": "~0.23.0",
+    "swagger-ui-dist": "~3.4.0"
+  },
+  "devDependencies": {}
+}

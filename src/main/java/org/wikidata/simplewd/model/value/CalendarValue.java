@@ -70,6 +70,15 @@ public class CalendarValue implements Value {
     }
 
     @Override
+    public int compareTo(Value o) {
+        if (o instanceof CalendarValue) {
+            return value.compare(((CalendarValue) o).value);
+        } else {
+            return toString().compareTo(o.toString());
+        }
+    }
+
+    @Override
     public boolean hasPlainSerialization() {
         return false;
     }

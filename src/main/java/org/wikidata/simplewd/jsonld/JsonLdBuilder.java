@@ -21,12 +21,10 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.KartographerAPI;
-import org.wikidata.simplewd.model.Claim;
 import org.wikidata.simplewd.model.Namespaces;
 import org.wikidata.simplewd.model.Resource;
 import org.wikidata.simplewd.model.value.GeoValue;
 import org.wikidata.simplewd.model.value.LocaleStringValue;
-import org.wikidata.simplewd.model.value.Value;
 
 import java.io.IOException;
 import java.util.*;
@@ -54,27 +52,25 @@ public class JsonLdBuilder {
         Context context = new Context();
         Map<String, Object> propertyValues = new HashMap<>();
 
-        resource.getClaims().collect(Collectors.groupingBy(Claim::getProperty)).forEach((property, claims) -> {
+        resource.getProperties().stream().sorted().forEach(property -> {
             if (PROPERTIES_WITH_BY_LANGUAGE_CONTAINER.contains(property)) {
                 if (FUNCTIONAL_PROPERTIES.contains(property)) {
                     Map<String, String> valuesByLanguage = new HashMap<>();
-                    claims.forEach(claim -> {
-                        if (claim.getValue() instanceof LocaleStringValue) {
-                            LocaleStringValue value = (LocaleStringValue) claim.getValue();
-                            valuesByLanguage.put(value.getLanguageCode(), value.toString());
+                    resource.getValues(property).forEach(value -> {
+                        if (value instanceof LocaleStringValue) {
+                            valuesByLanguage.put(((LocaleStringValue) value).getLanguageCode(), value.toString());
                         } else {
-                            LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + claim.getValue().toString());
+                            LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
                         }
                     });
                     propertyValues.put(property, valuesByLanguage);
                 } else {
                     Map<String, List<String>> valuesByLanguage = new HashMap<>();
-                    claims.forEach(claim -> {
-                        if (claim.getValue() instanceof LocaleStringValue) {
-                            LocaleStringValue value = (LocaleStringValue) claim.getValue();
-                            valuesByLanguage.computeIfAbsent(value.getLanguageCode(), k -> new ArrayList<>()).add(value.toString());
+                    resource.getValues(property).forEach(value -> {
+                        if (value instanceof LocaleStringValue) {
+                            valuesByLanguage.computeIfAbsent(((LocaleStringValue) value).getLanguageCode(), k -> new ArrayList<>()).add(value.toString());
                         } else {
-                            LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + claim.getValue().toString());
+                            LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
                         }
                     });
                     propertyValues.put(property, valuesByLanguage);
@@ -82,20 +78,24 @@ public class JsonLdBuilder {
                 context.addPropertyContainer(property, "@language");
             } else {
                 if (FUNCTIONAL_PROPERTIES.contains(property)) {
-                    Value value = claims.get(0).getValue();
-                    if (value.hasPlainSerialization()) {
-                        context.addPropertyRange(property, value.getType());
-                        propertyValues.put(property, value.toString());
-                    } else {
-                        propertyValues.put(property, value);
-                    }
+                    resource.getValue(property).ifPresent(value -> {
+                        if (value.hasPlainSerialization()) {
+                            context.addPropertyRange(property, value.getType());
+                            propertyValues.put(property, value.toString());
+                        } else {
+                            propertyValues.put(property, value);
+                        }
+                    });
                 } else {
-                    if (claims.get(0).getValue().hasPlainSerialization()) {
-                        context.addPropertyRange(property, claims.get(0).getValue().getType());
-                        propertyValues.put(property, claims.stream().map(Claim::getValue).map(Object::toString).collect(Collectors.toList()));
-                    } else {
-                        propertyValues.put(property, claims.stream().map(Claim::getValue).collect(Collectors.toList()));
-                    }
+                    resource.getValue(property).ifPresent(valueSample -> {
+                        if (valueSample.hasPlainSerialization()) {
+                            context.addPropertyRange(property, valueSample.getType());
+                            propertyValues.put(property, resource.getValues(property).map(Object::toString).collect(Collectors.toList()));
+                        } else {
+                            propertyValues.put(property, resource.getValues(property).collect(Collectors.toList()));
+                        }
+                    });
+
                 }
             }
         });
