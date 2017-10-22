@@ -16,6 +16,9 @@
 
 package org.wikidata.simplewd.api;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.wikidata.simplewd.mapping.ItemMapper;
 import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.EntityLookup;
@@ -28,12 +31,23 @@ import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class WikidataAPI implements EntityLookup {
     private static final Pattern ITEM_URI_PATTERN = Pattern.compile("^wd:Q\\d+$");
 
     private ItemMapper itemMapper;
+    private LoadingCache<String, Optional<Entity>> entityCache = CacheBuilder.newBuilder()
+            .maximumSize(65536) //TODO: configure?
+            .expireAfterWrite(7, TimeUnit.DAYS)
+            .build(new CacheLoader<String, Optional<Entity>>() {
+                @Override
+                public Optional<Entity> load(String id) throws IOException {
+                    return retrieveEntityForIRI(id);
+                }
+            });
 
     public WikidataAPI() throws IOException {
         itemMapper = new ItemMapper((new DumpProcessingController("wikidatawiki")).getSitesInformation());
@@ -47,13 +61,21 @@ public class WikidataAPI implements EntityLookup {
         }
 
         try {
+            return entityCache.get(id);
+        } catch (ExecutionException e) {
+            throw new IOException(e);
+        }
+    }
+
+    private Optional<Entity> retrieveEntityForIRI(String id) throws IOException {
+        try {
             EntityDocument entity = WikibaseDataFetcher.getWikidataDataFetcher().getEntityDocument(id.replace("wd:", ""));
             if (entity == null) {
                 return Optional.empty();
             } else if (entity instanceof ItemDocument) {
                 return Optional.of(itemMapper.map((ItemDocument) entity));
             } else {
-                throw new IllegalArgumentException("This is not the IRI of an item: " + Namespaces.expand(id));
+                throw new IOException("It seems to not be the IRI of an item: " + Namespaces.expand(id));
             }
         } catch (MediaWikiApiErrorException e) {
             if (e.getErrorCode().equals("no-such-entity")) {
