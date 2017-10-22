@@ -27,20 +27,20 @@ import java.util.Map;
 /**
  * @author Thomas Pellissier Tanon
  */
-public class Entity {
+public class JsonLdEntity {
 
     private String IRI;
     private List<String> types;
     private Map<String, Object> propertyValues;
 
-    Entity(String IRI, List<String> types, Map<String, Object> propertyValues) {
+    JsonLdEntity(String IRI, List<String> types, Map<String, Object> propertyValues) {
         this.IRI = IRI;
         this.types = types;
         this.propertyValues = propertyValues;
     }
 
     @JsonCreator
-    public Entity(Map<String, Object> content) {
+    public JsonLdEntity(Map<String, Object> content) {
         this((String) content.get("@id"), (List) content.get("@type"), content);
     }
 

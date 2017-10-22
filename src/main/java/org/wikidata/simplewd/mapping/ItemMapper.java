@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.mapping.statement.InvalidWikibaseValueException;
 import org.wikidata.simplewd.mapping.statement.MapperRegistry;
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.Resource;
+import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.value.LocaleStringValue;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
@@ -44,44 +44,44 @@ public class ItemMapper {
         this.mapperRegistry = new MapperRegistry();
     }
 
-    public Resource map(ItemDocument document) {
-        Resource resource = new Resource(document.getEntityId().getIri());
-        addTermsToResource(document, resource);
-        addSiteLinksToResource(document, resource);
-        addStatementsToResource(document, resource);
-        return resource;
+    public Entity map(ItemDocument document) {
+        Entity entity = new Entity(document.getEntityId().getIri());
+        addTermsToResource(document, entity);
+        addSiteLinksToResource(document, entity);
+        addStatementsToResource(document, entity);
+        return entity;
     }
 
-    private void addTermsToResource(TermedDocument termedDocument, Resource resource) {
+    private void addTermsToResource(TermedDocument termedDocument, Entity entity) {
         termedDocument.getLabels().values().forEach(label -> {
             LocaleStringValue value = convert(label);
-            resource.addClaim("name", value);
+            entity.addClaim("name", value);
         });
         termedDocument.getDescriptions().values().forEach(description ->
-                resource.addClaim("description", convert(description))
+                entity.addClaim("description", convert(description))
         );
         termedDocument.getAliases().values().forEach(aliases ->
                 aliases.forEach(alias -> {
                     LocaleStringValue value = convert(alias);
-                    resource.addClaim("alternateName", value);
+                    entity.addClaim("alternateName", value);
                 })
         );
     }
 
-    private void addSiteLinksToResource(ItemDocument itemDocument, Resource resource) {
+    private void addSiteLinksToResource(ItemDocument itemDocument, Entity entity) {
         itemDocument.getSiteLinks().values().stream()
                 .filter(siteLink -> sites.getGroup(siteLink.getSiteKey()).equals("wikipedia"))
                 .forEach(siteLink ->
-                        resource.addClaim(new Claim("sameAs", URI.create(sites.getSiteLinkUrl(siteLink).replace("https://", "http://"))))
+                        entity.addClaim(new Claim("sameAs", URI.create(sites.getSiteLinkUrl(siteLink).replace("https://", "http://"))))
                 );
     }
 
-    private void addStatementsToResource(StatementDocument statementDocument, Resource resource) {
+    private void addStatementsToResource(StatementDocument statementDocument, Entity entity) {
         statementDocument.getStatementGroups().forEach(group ->
                 getBestStatements(group).forEach(statement ->
                         mapperRegistry.getMapperForProperty(statement.getClaim().getMainSnak().getPropertyId()).ifPresent(mapper -> {
                             try {
-                                mapper.mapStatement(statement).forEach(resource::addClaim);
+                                mapper.mapStatement(statement).forEach(entity::addClaim);
                             } catch (InvalidWikibaseValueException e) {
                                 //LOGGER.warn(e.getMessage(), e);
                             }

@@ -25,8 +25,8 @@ import org.wikidata.simplewd.http.html.MainRenderer;
 import org.wikidata.simplewd.http.html.SwaggerRenderer;
 import org.wikidata.simplewd.jsonld.JsonLdBuilder;
 import org.wikidata.simplewd.mapping.ItemMapper;
+import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.Namespaces;
-import org.wikidata.simplewd.model.Resource;
 import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
@@ -77,7 +77,7 @@ public class Main {
         return (port != null) ? Integer.valueOf(port) : 7000;
     }
 
-    private Resource getResource(String id) {
+    private Entity getResource(String id) {
         LOGGER.info("Retrieving: " + id);
 
         id = Namespaces.reduce(id);

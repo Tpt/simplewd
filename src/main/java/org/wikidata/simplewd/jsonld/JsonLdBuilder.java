@@ -21,8 +21,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.KartographerAPI;
+import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.Namespaces;
-import org.wikidata.simplewd.model.Resource;
 import org.wikidata.simplewd.model.value.GeoValue;
 import org.wikidata.simplewd.model.value.LocaleStringValue;
 
@@ -48,15 +48,15 @@ public class JsonLdBuilder {
     ); //TODO: schema
     private static final Set<String> PROPERTIES_WITH_BY_LANGUAGE_CONTAINER = Sets.newHashSet("alternateName", "description", "name");
 
-    public JsonLdRoot<Entity> buildEntity(Resource resource) {
-        Context context = new Context();
+    public JsonLdRoot<JsonLdEntity> buildEntity(Entity entity) {
+        JsonLdContext context = new JsonLdContext();
         Map<String, Object> propertyValues = new HashMap<>();
 
-        resource.getProperties().stream().sorted().forEach(property -> {
+        entity.getProperties().stream().sorted().forEach(property -> {
             if (PROPERTIES_WITH_BY_LANGUAGE_CONTAINER.contains(property)) {
                 if (FUNCTIONAL_PROPERTIES.contains(property)) {
                     Map<String, String> valuesByLanguage = new HashMap<>();
-                    resource.getValues(property).forEach(value -> {
+                    entity.getValues(property).forEach(value -> {
                         if (value instanceof LocaleStringValue) {
                             valuesByLanguage.put(((LocaleStringValue) value).getLanguageCode(), value.toString());
                         } else {
@@ -66,7 +66,7 @@ public class JsonLdBuilder {
                     propertyValues.put(property, valuesByLanguage);
                 } else {
                     Map<String, List<String>> valuesByLanguage = new HashMap<>();
-                    resource.getValues(property).forEach(value -> {
+                    entity.getValues(property).forEach(value -> {
                         if (value instanceof LocaleStringValue) {
                             valuesByLanguage.computeIfAbsent(((LocaleStringValue) value).getLanguageCode(), k -> new ArrayList<>()).add(value.toString());
                         } else {
@@ -78,7 +78,7 @@ public class JsonLdBuilder {
                 context.addPropertyContainer(property, "@language");
             } else {
                 if (FUNCTIONAL_PROPERTIES.contains(property)) {
-                    resource.getValue(property).ifPresent(value -> {
+                    entity.getValue(property).ifPresent(value -> {
                         if (value.hasPlainSerialization()) {
                             context.addPropertyRange(property, value.getType());
                             propertyValues.put(property, value.toString());
@@ -87,12 +87,12 @@ public class JsonLdBuilder {
                         }
                     });
                 } else {
-                    resource.getValue(property).ifPresent(valueSample -> {
+                    entity.getValue(property).ifPresent(valueSample -> {
                         if (valueSample.hasPlainSerialization()) {
                             context.addPropertyRange(property, valueSample.getType());
-                            propertyValues.put(property, resource.getValues(property).map(Object::toString).collect(Collectors.toList()));
+                            propertyValues.put(property, entity.getValues(property).map(Object::toString).collect(Collectors.toList()));
                         } else {
-                            propertyValues.put(property, resource.getValues(property).collect(Collectors.toList()));
+                            propertyValues.put(property, entity.getValues(property).collect(Collectors.toList()));
                         }
                     });
 
@@ -100,22 +100,22 @@ public class JsonLdBuilder {
             }
         });
 
-        buildGeoValueFromKartographer(resource)
+        buildGeoValueFromKartographer(entity)
                 .ifPresent(geoValue -> propertyValues.put("geo", geoValue));
 
-        return new JsonLdRoot<>(context, new Entity(
-                resource.getIRI(),
-                resource.getTypes().collect(Collectors.toList()),
+        return new JsonLdRoot<>(context, new JsonLdEntity(
+                entity.getIRI(),
+                entity.getTypes().collect(Collectors.toList()),
                 propertyValues
         ));
     }
 
-    private Optional<Object> buildGeoValueFromKartographer(Resource resource) {
+    private Optional<Object> buildGeoValueFromKartographer(Entity entity) {
         try {
             //We only do geo shape lookup for Places in order to avoid unneeded requests
-            if (resource.getTypes().anyMatch(type -> type.equals("Place"))) {
+            if (entity.getTypes().anyMatch(type -> type.equals("Place"))) {
                 Geometry shape = KartographerAPI.getInstance()
-                        .getShapeForItemId(Namespaces.expand(resource.getIRI()));
+                        .getShapeForItemId(Namespaces.expand(entity.getIRI()));
                 if (!shape.isEmpty()) {
                     return Optional.of(GeoValue.buildGeoValue(shape));
                 }

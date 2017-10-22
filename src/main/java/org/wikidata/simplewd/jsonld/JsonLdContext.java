@@ -29,7 +29,7 @@ import java.util.TreeMap;
  * @author Thomas Pellissier Tanon
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Context {
+public class JsonLdContext {
 
     private static final Map<String, Object> BASIC_CONTEXT = new TreeMap<>();
 
@@ -40,7 +40,7 @@ public class Context {
 
     private Map<String, Object> context;
 
-    Context() {
+    JsonLdContext() {
         context = new HashMap<>(BASIC_CONTEXT);
     }
 

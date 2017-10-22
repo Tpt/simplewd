@@ -25,17 +25,17 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  */
 public class JsonLdRoot<T> {
 
-    private Context context;
+    private JsonLdContext context;
     private T content;
 
     @JsonCreator
-    JsonLdRoot(@JsonProperty("@context") Context context, @JsonUnwrapped T content) {
+    JsonLdRoot(@JsonProperty("@context") JsonLdContext context, @JsonUnwrapped T content) {
         this.context = context;
         this.content = content;
     }
 
     @JsonProperty("@context")
-    public Context getContext() {
+    public JsonLdContext getContext() {
         return context;
     }
 

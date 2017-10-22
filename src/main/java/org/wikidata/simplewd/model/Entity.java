@@ -26,12 +26,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class Resource {
+public class Entity {
     private String IRI;
     private Set<String> types = new HashSet<>();
     private Set<Claim> claims = new HashSet<>();
 
-    public Resource(String IRI) {
+    public Entity(String IRI) {
         this.IRI = Namespaces.reduce(IRI);
     }
 
@@ -68,7 +68,7 @@ public class Resource {
             if (claim.getValue() instanceof ResourceValue) {
                 types.add(claim.getValue().toString());
             } else {
-                throw new IllegalArgumentException("The range of rdf:type is Resource");
+                throw new IllegalArgumentException("The range of rdf:type is Entity");
             }
         } else {
             claims.add(claim);

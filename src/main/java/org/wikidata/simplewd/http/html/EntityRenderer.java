@@ -18,8 +18,8 @@ package org.wikidata.simplewd.http.html;
 
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
+import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.Namespaces;
-import org.wikidata.simplewd.model.Resource;
 import org.wikidata.simplewd.model.value.*;
 
 import java.util.*;
@@ -38,9 +38,9 @@ public class EntityRenderer extends HTMLRenderer {
         this.locale = locale;
     }
 
-    public String render(Resource resource) {
-        String title = filterForLocale(resource, "name").findAny().map(LocaleStringValue::toString).orElse(resource.getIRI());
-        Optional<DomContent> subtitle = filterForLocale(resource, "description").findAny().map(this::render);
+    public String render(Entity entity) {
+        String title = filterForLocale(entity, "name").findAny().map(LocaleStringValue::toString).orElse(entity.getIRI());
+        Optional<DomContent> subtitle = filterForLocale(entity, "description").findAny().map(this::render);
 
         ContainerTag card = div(
                 section(
@@ -52,11 +52,11 @@ public class EntityRenderer extends HTMLRenderer {
 
         //Generates the data table
         Map<Value, List<Value>> data = new HashMap<>();
-        data.put(new StringValue("type"), resource.getTypes().map(ConstantValue::new).collect(Collectors.toList()));
-        resource.getProperties().forEach(property ->
+        data.put(new StringValue("type"), entity.getTypes().map(ConstantValue::new).collect(Collectors.toList()));
+        entity.getProperties().forEach(property ->
                 data.put(
                         new ConstantValue(property),
-                        resource.getValues(property).collect(Collectors.toList())
+                        entity.getValues(property).collect(Collectors.toList())
                 )
         );
         List<DomContent> tableRows = new ArrayList<>();
@@ -81,8 +81,8 @@ public class EntityRenderer extends HTMLRenderer {
         return super.render("SimpleWD - " + title, "", div(card, table));
     }
 
-    private Stream<LocaleStringValue> filterForLocale(Resource resource, String property) {
-        return resource.getValues(property)
+    private Stream<LocaleStringValue> filterForLocale(Entity entity, String property) {
+        return entity.getValues(property)
                 .filter(value -> value instanceof LocaleStringValue)
                 .map(value -> (LocaleStringValue) value)
                 .filter(value -> value.getLocale().equals(locale)); //TODO: get also sub-locale
