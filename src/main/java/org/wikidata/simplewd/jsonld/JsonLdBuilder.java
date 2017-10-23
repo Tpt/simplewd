@@ -21,14 +21,18 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.KartographerAPI;
+import org.wikidata.simplewd.model.Claim;
 import org.wikidata.simplewd.model.Entity;
+import org.wikidata.simplewd.model.EntityLookup;
 import org.wikidata.simplewd.model.Namespaces;
+import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.simplewd.model.value.GeoValue;
 import org.wikidata.simplewd.model.value.LocaleStringValue;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -48,9 +52,30 @@ public class JsonLdBuilder {
     ); //TODO: schema
     private static final Set<String> PROPERTIES_WITH_BY_LANGUAGE_CONTAINER = Sets.newHashSet("alternateName", "description", "name");
 
+    private EntityLookup entityLookup;
+
+    public JsonLdBuilder(EntityLookup entityLookup) {
+        this.entityLookup = entityLookup;
+    }
+
     public JsonLdRoot<JsonLdEntity> buildEntity(Entity entity) {
         JsonLdContext context = new JsonLdContext();
+        return new JsonLdRoot<>(context, mapEntity(entity, true, context));
+    }
+
+    private JsonLdEntity mapEntity(Entity entity, boolean withChildren, JsonLdContext context) {
         Map<String, Object> propertyValues = new HashMap<>();
+
+        if (withChildren) {
+            //We preload entities
+            try {
+                entityLookup.getEntitiesForIRI(entity.getClaims().map(Claim::getValue).flatMap(value ->
+                        (value instanceof EntityValue) ? Stream.of(value.toString()) : Stream.empty()
+                ).toArray(String[]::new));
+            } catch (Exception e) {
+                //We ignore the errors
+            }
+        }
 
         entity.getProperties().stream().sorted().forEach(property -> {
             if (PROPERTIES_WITH_BY_LANGUAGE_CONTAINER.contains(property)) {
@@ -77,37 +102,35 @@ public class JsonLdBuilder {
                 }
                 context.addPropertyContainer(property, "@language");
             } else {
+                Stream<Object> values = entity.getValues(property).map(value -> {
+                    if (value.hasPlainSerialization()) {
+                        context.addPropertyRange(property, value.getType());
+                        return value.toString();
+                    } else if (withChildren && value instanceof EntityValue) {
+                        try {
+                            return entityLookup.getEntityForIRI(value.toString())
+                                    .map(e -> (Object) mapEntity(e, false, context))
+                                    .orElse(value);
+                        } catch (Exception e) {
+                            LOGGER.info(e.getMessage(), e);
+                        }
+                    }
+                    return value;
+                });
                 if (FUNCTIONAL_PROPERTIES.contains(property)) {
-                    entity.getValue(property).ifPresent(value -> {
-                        if (value.hasPlainSerialization()) {
-                            context.addPropertyRange(property, value.getType());
-                            propertyValues.put(property, value.toString());
-                        } else {
-                            propertyValues.put(property, value);
-                        }
-                    });
+                    values.findAny().ifPresent(value -> propertyValues.put(property, value));
                 } else {
-                    entity.getValue(property).ifPresent(valueSample -> {
-                        if (valueSample.hasPlainSerialization()) {
-                            context.addPropertyRange(property, valueSample.getType());
-                            propertyValues.put(property, entity.getValues(property).map(Object::toString).collect(Collectors.toList()));
-                        } else {
-                            propertyValues.put(property, entity.getValues(property).collect(Collectors.toList()));
-                        }
-                    });
-
+                    propertyValues.put(property, values.collect(Collectors.toList()));
                 }
             }
         });
 
-        buildGeoValueFromKartographer(entity)
-                .ifPresent(geoValue -> propertyValues.put("geo", geoValue));
+        if (withChildren) {
+            buildGeoValueFromKartographer(entity)
+                    .ifPresent(geoValue -> propertyValues.put("geo", geoValue));
+        }
 
-        return new JsonLdRoot<>(context, new JsonLdEntity(
-                entity.getIRI(),
-                entity.getTypes().collect(Collectors.toList()),
-                propertyValues
-        ));
+        return new JsonLdEntity(entity.getIRI(), entity.getTypes().collect(Collectors.toList()), propertyValues);
     }
 
     private Optional<Object> buildGeoValueFromKartographer(Entity entity) {

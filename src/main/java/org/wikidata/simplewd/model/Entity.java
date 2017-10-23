@@ -16,7 +16,7 @@
 
 package org.wikidata.simplewd.model;
 
-import org.wikidata.simplewd.model.value.ResourceValue;
+import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.simplewd.model.value.Value;
 
 import java.util.HashSet;
@@ -65,7 +65,7 @@ public class Entity {
 
     public void addClaim(Claim claim) {
         if (claim.getProperty().equals("@type")) {
-            if (claim.getValue() instanceof ResourceValue) {
+            if (claim.getValue() instanceof EntityValue) {
                 types.add(claim.getValue().toString());
             } else {
                 throw new IllegalArgumentException("The range of rdf:type is Entity");

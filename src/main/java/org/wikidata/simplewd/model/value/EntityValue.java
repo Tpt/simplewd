@@ -23,11 +23,11 @@ import org.wikidata.simplewd.model.Namespaces;
 /**
  * @author Thomas Pellissier Tanon
  */
-public class ResourceValue implements Value {
+public class EntityValue implements Value {
 
     private String IRI;
 
-    public ResourceValue(String IRI) {
+    public EntityValue(String IRI) {
         this.IRI = Namespaces.reduce(IRI);
     }
 
@@ -50,7 +50,7 @@ public class ResourceValue implements Value {
 
     @Override
     public boolean equals(Object value) {
-        return (value instanceof ResourceValue) && ((ResourceValue) value).IRI.equals(value);
+        return (value instanceof EntityValue) && ((EntityValue) value).IRI.equals(value);
     }
 
     @Override

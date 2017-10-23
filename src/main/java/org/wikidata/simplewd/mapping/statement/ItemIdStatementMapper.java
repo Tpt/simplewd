@@ -17,7 +17,7 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.value.ResourceValue;
+import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 
 import java.util.stream.Stream;
@@ -35,6 +35,6 @@ class ItemIdStatementMapper implements StatementMainItemIdValueMapper {
 
     @Override
     public Stream<Claim> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
-        return Stream.of(new Claim(targetFieldName, new ResourceValue(value.getIri())));
+        return Stream.of(new Claim(targetFieldName, new EntityValue(value.getIri())));
     }
 }

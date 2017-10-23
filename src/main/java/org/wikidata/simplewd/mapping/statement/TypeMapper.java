@@ -24,7 +24,7 @@ import com.google.common.collect.Streams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.value.ResourceValue;
+import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
@@ -181,7 +181,7 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
     @Override
     public Stream<Claim> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
         return mapClass(value).stream()
-                .map(type -> new Claim("@type", new ResourceValue(type)));
+                .map(type -> new Claim("@type", new EntityValue(type)));
     }
 
     private Set<String> mapClass(ItemIdValue itemId) {

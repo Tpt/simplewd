@@ -18,7 +18,11 @@ package org.wikidata.simplewd.http.html;
 
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.wikidata.simplewd.model.Claim;
 import org.wikidata.simplewd.model.Entity;
+import org.wikidata.simplewd.model.EntityLookup;
 import org.wikidata.simplewd.model.Namespaces;
 import org.wikidata.simplewd.model.value.*;
 
@@ -30,15 +34,28 @@ import static j2html.TagCreator.*;
 
 public class EntityRenderer extends HTMLRenderer {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EntityRenderer.class);
     private static final String BASE_URL = "/simplewd/v0/entity/";
 
+    private EntityLookup entityLookup;
     private Locale locale;
 
-    public EntityRenderer(Locale locale) {
+    public EntityRenderer(EntityLookup entityLookup, Locale locale) {
+        this.entityLookup = entityLookup;
         this.locale = locale;
     }
 
     public String render(Entity entity) {
+        //We preload entities
+        try {
+            entityLookup.getEntitiesForIRI(entity.getClaims().map(Claim::getValue).flatMap(value ->
+                    (value instanceof EntityValue) ? Stream.of(value.toString()) : Stream.empty()
+            ).toArray(String[]::new));
+        } catch (Exception e) {
+            //We ignore the errors
+        }
+
+
         String title = filterForLocale(entity, "name").findAny().map(LocaleStringValue::toString).orElse(entity.getIRI());
         Optional<DomContent> subtitle = filterForLocale(entity, "description").findAny().map(this::render);
 
@@ -97,8 +114,8 @@ public class EntityRenderer extends HTMLRenderer {
             return render((GeoValue) value);
         } else if (value instanceof LocaleStringValue) {
             return render((LocaleStringValue) value);
-        } else if (value instanceof ResourceValue) {
-            return render((ResourceValue) value);
+        } else if (value instanceof EntityValue) {
+            return render((EntityValue) value);
         } else if (value instanceof StringValue) {
             return render((StringValue) value);
         } else if (value instanceof URIValue) {
@@ -124,8 +141,19 @@ public class EntityRenderer extends HTMLRenderer {
         return span(value.toString()).attr("lang", value.getLanguageCode()).withTitle(value.getLocale().getDisplayName(locale));
     }
 
-    private DomContent render(ResourceValue value) {
-        return a(value.toString()).withHref(BASE_URL + value.toString());
+    private DomContent render(EntityValue value) {
+        DomContent basicRendering = a(value.toString()).withHref(BASE_URL + value.toString());
+        try {
+            return entityLookup.getEntityForIRI(value.toString())
+                    .map(entity -> (DomContent)
+                            a(filterForLocale(entity, "name").findAny().map(Object::toString).orElseGet(value::toString))
+                                    .withHref(BASE_URL + value.toString())
+                                    .withTitle(filterForLocale(entity, "description").findAny().map(Object::toString).orElse(""))
+                    ).orElse(basicRendering);
+        } catch (Exception e) {
+            LOGGER.info(e.getMessage(), e);
+        }
+        return basicRendering;
     }
 
     private DomContent render(StringValue value) {

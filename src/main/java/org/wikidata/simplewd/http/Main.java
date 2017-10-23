@@ -16,6 +16,7 @@
 
 package org.wikidata.simplewd.http;
 
+import io.javalin.Context;
 import io.javalin.HaltException;
 import io.javalin.Javalin;
 import org.slf4j.Logger;
@@ -25,6 +26,8 @@ import org.wikidata.simplewd.http.html.EntityRenderer;
 import org.wikidata.simplewd.http.html.MainRenderer;
 import org.wikidata.simplewd.http.html.SwaggerRenderer;
 import org.wikidata.simplewd.jsonld.JsonLdBuilder;
+import org.wikidata.simplewd.jsonld.JsonLdEntity;
+import org.wikidata.simplewd.jsonld.JsonLdRoot;
 import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.EntityLookup;
 import org.wikidata.simplewd.model.Namespaces;
@@ -34,12 +37,15 @@ import java.util.Locale;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-    private static final JsonLdBuilder JSON_LD_BUILDER = new JsonLdBuilder();
 
     private EntityLookup entityLookup;
+    private JsonLdBuilder jsonLdBuilder;
+    private EntityRenderer entityRenderer;
 
     private Main() throws IOException {
         entityLookup = new WikidataAPI();
+        jsonLdBuilder = new JsonLdBuilder(entityLookup);
+        entityRenderer = new EntityRenderer(entityLookup, Locale.ENGLISH);
     }
 
     public static void main(String[] args) throws IOException {
@@ -52,14 +58,17 @@ public class Main {
                 .get("/simplewd/swagger.html", ctx -> ctx.html((new SwaggerRenderer()).render()))
                 .get("/simplewd/entity/:id", ctx -> ctx.redirect("/simplewd/v0/entity/" + ctx.param("id")))
                 .get("/simplewd/v0/entity/:id", ctx -> {
-                    String accept = ctx.header("Accept");
-                    if (accept != null && accept.contains("text/html")) {
-                        ctx.html((new EntityRenderer(Locale.ENGLISH)).render(main.getResource(ctx.param("id"))));
-                    } else {
-                        ctx.json(JSON_LD_BUILDER.buildEntity(main.getResource(ctx.param("id"))));
-                        if (accept != null && accept.contains("application/ld+json")) {
+                    switch (getResponseContentType(ctx)) {
+                        case JSON_LD:
+                            ctx.json(main.getResourceAsJson(ctx.param("id")));
                             ctx.contentType("application/ld+json");
-                        }
+                            break;
+                        case JSON:
+                            ctx.json(main.getResourceAsJson(ctx.param("id")));
+                            break;
+                        case HTML:
+                            ctx.html(main.getResourceAsHTML(ctx.param("id")));
+                            break;
                     }
                 })
                 .port(getPort())
@@ -69,6 +78,47 @@ public class Main {
     private static int getPort() {
         String port = System.getenv("PORT");
         return (port != null) ? Integer.valueOf(port) : 7000;
+    }
+
+    private static CONTENT_TYPE getResponseContentType(Context ctx) {
+        String type = ctx.queryParam("type");
+        if (type != null && type.length() > 0) {
+            switch (type) {
+                case "json-ld":
+                case "jsonld":
+                    return CONTENT_TYPE.JSON_LD;
+                case "json":
+                    return CONTENT_TYPE.JSON;
+                case "html":
+                    return CONTENT_TYPE.HTML;
+                default:
+                    throw new HaltException(406, "The " + type + " format is not supported");
+            }
+        }
+
+        String accept = ctx.header("Accept");
+        if (accept != null) {
+            if (accept.contains("text/html")) {
+                return CONTENT_TYPE.HTML;
+            } else if (accept.contains("application/ld+json")) {
+                return CONTENT_TYPE.JSON_LD;
+            } else if (accept.contains("application/json")) {
+                return CONTENT_TYPE.JSON;
+            }
+        }
+        if (accept == null || accept.length() == 0) {
+            return CONTENT_TYPE.JSON;
+        }
+
+        throw new HaltException(406, "This endpoint only supports JSON and HTML");
+    }
+
+    private JsonLdRoot<JsonLdEntity> getResourceAsJson(String id) {
+        return jsonLdBuilder.buildEntity(getResource(id));
+    }
+
+    private String getResourceAsHTML(String id) {
+        return entityRenderer.render(getResource(id));
     }
 
     private Entity getResource(String id) {
@@ -81,5 +131,11 @@ public class Main {
         } catch (IllegalArgumentException e) {
             throw new HaltException(400, Namespaces.expand(id) + " is not a supported entity");
         }
+    }
+
+    private enum CONTENT_TYPE {
+        JSON_LD,
+        JSON,
+        HTML
     }
 }

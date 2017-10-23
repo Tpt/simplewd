@@ -17,9 +17,24 @@
 package org.wikidata.simplewd.model;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public interface EntityLookup {
 
-    Optional<Entity> getEntityForIRI(String id) throws IOException;
+    default Optional<Entity> getEntityForIRI(String id) throws IOException {
+        return Optional.ofNullable(getEntitiesForIRI(id).get(id));
+    }
+
+    /**
+     * @return Map indexed by reduced IRI
+     */
+    default Map<String, Entity> getEntitiesForIRI(String... ids) throws IOException {
+        Map<String, Entity> entities = new HashMap<>();
+        for (String id : ids) {
+            getEntityForIRI(id).ifPresent(entity -> entities.put(Namespaces.reduce(id), entity));
+        }
+        return entities;
+    }
 }
