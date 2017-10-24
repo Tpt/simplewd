@@ -51,6 +51,7 @@ public class JsonLdBuilder {
             "url"
     ); //TODO: schema
     private static final Set<String> PROPERTIES_WITH_BY_LANGUAGE_CONTAINER = Sets.newHashSet("alternateName", "description", "name");
+	private static final KartographerAPI KARTOGRAPHER_API = new KartographerAPI();
 
     private EntityLookup entityLookup;
 
@@ -137,9 +138,8 @@ public class JsonLdBuilder {
         try {
             //We only do geo shape lookup for Places in order to avoid unneeded requests
             if (entity.getTypes().anyMatch(type -> type.equals("Place"))) {
-                Geometry shape = KartographerAPI.getInstance()
-                        .getShapeForItemId(Namespaces.expand(entity.getIRI()));
-                if (!shape.isEmpty()) {
+				Geometry shape = KARTOGRAPHER_API.getShapeForItemId(Namespaces.expand(entity.getIRI()));
+				if (!shape.isEmpty()) {
                     return Optional.of(GeoValue.buildGeoValue(shape));
                 }
             }

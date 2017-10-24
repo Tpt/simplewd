@@ -45,7 +45,6 @@ public class KartographerAPI {
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     private static final GeoJsonReader GEO_JSON_READER = new GeoJsonReader(GEOMETRY_FACTORY);
     private static final Geometry EMPTY_GEOMETRY = GEOMETRY_FACTORY.createGeometryCollection(new Geometry[]{});
-    private static final KartographerAPI INSTANCE = new KartographerAPI();
     private LoadingCache<String, Geometry> shapeCache = CacheBuilder.newBuilder()
             .maximumSize(16384) //TODO: configure?
             .expireAfterWrite(14, TimeUnit.DAYS)
@@ -55,13 +54,6 @@ public class KartographerAPI {
                     return requestShapeForItemId(itemId);
                 }
             });
-
-    private KartographerAPI() {
-    }
-
-    public static KartographerAPI getInstance() {
-        return INSTANCE;
-    }
 
     public Geometry getShapeForItemId(String itemURI) throws IOException {
         if (!WIKIDATA_ITEM_URI_PATTERN.matcher(itemURI).matches()) {
