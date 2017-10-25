@@ -20,11 +20,13 @@ import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wikidata.simplewd.api.CommonsAPI;
 import org.wikidata.simplewd.api.KartographerAPI;
 import org.wikidata.simplewd.model.Claim;
 import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.EntityLookup;
 import org.wikidata.simplewd.model.Namespaces;
+import org.wikidata.simplewd.model.value.CommonsFileValue;
 import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.simplewd.model.value.GeoValue;
 import org.wikidata.simplewd.model.value.LocaleStringValue;
@@ -39,113 +41,125 @@ import java.util.stream.Stream;
  */
 public class JsonLdBuilder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdBuilder.class);
-    private static final Set<String> FUNCTIONAL_PROPERTIES = Sets.newHashSet(
-            "birthDate", "birthPlace",
-            "deathDate", "deathPlace", "description",
-            "flightNumber",
-            "gender", "geo",
-            "iataCode", "icaoCode", "isicV4", "isrcCode", "iswcCode",
-            "leiCode",
-            "naics", "name",
-            "url"
-    ); //TODO: schema
-    private static final Set<String> PROPERTIES_WITH_BY_LANGUAGE_CONTAINER = Sets.newHashSet("alternateName", "description", "name");
+	private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdBuilder.class);
+	private static final Set<String> FUNCTIONAL_PROPERTIES = Sets.newHashSet(
+			"birthDate", "birthPlace",
+			"deathDate", "deathPlace", "description",
+			"flightNumber",
+			"gender", "geo",
+			"iataCode", "icaoCode", "isicV4", "isrcCode", "iswcCode",
+			"leiCode",
+			"naics", "name",
+			"url"
+	); //TODO: schema
+	private static final Set<String> PROPERTIES_WITH_BY_LANGUAGE_CONTAINER = Sets.newHashSet("alternateName", "description", "name");
 	private static final KartographerAPI KARTOGRAPHER_API = new KartographerAPI();
 
-    private EntityLookup entityLookup;
+	private EntityLookup entityLookup;
+	private CommonsAPI commonsAPI;
 
-    public JsonLdBuilder(EntityLookup entityLookup) {
-        this.entityLookup = entityLookup;
-    }
+	public JsonLdBuilder(EntityLookup entityLookup, CommonsAPI commonsAPI) {
+		this.entityLookup = entityLookup;
+		this.commonsAPI = commonsAPI;
+	}
 
-    public JsonLdRoot<JsonLdEntity> buildEntity(Entity entity) {
-        JsonLdContext context = new JsonLdContext();
-        return new JsonLdRoot<>(context, mapEntity(entity, true, context));
-    }
+	public JsonLdRoot<JsonLdEntity> buildEntity(Entity entity) {
+		JsonLdContext context = new JsonLdContext();
+		return new JsonLdRoot<>(context, mapEntity(entity, true, context));
+	}
 
-    private JsonLdEntity mapEntity(Entity entity, boolean withChildren, JsonLdContext context) {
-        Map<String, Object> propertyValues = new HashMap<>();
+	private JsonLdEntity mapEntity(Entity entity, boolean withChildren, JsonLdContext context) {
+		Map<String, Object> propertyValues = new HashMap<>();
 
-        if (withChildren) {
-            //We preload entities
-            try {
-                entityLookup.getEntitiesForIRI(entity.getClaims().map(Claim::getValue).flatMap(value ->
-                        (value instanceof EntityValue) ? Stream.of(value.toString()) : Stream.empty()
-                ).toArray(String[]::new));
-            } catch (Exception e) {
-                //We ignore the errors
-            }
-        }
+		if (withChildren) {
+			//We preload entities
+			try {
+				entityLookup.getEntitiesForIRI(entity.getClaims().map(Claim::getValue).flatMap(value ->
+						(value instanceof EntityValue) ? Stream.of(value.toString()) : Stream.empty()
+				).toArray(String[]::new));
+			} catch (Exception e) {
+				//We ignore the errors
+			}
+		}
 
-        entity.getProperties().stream().sorted().forEach(property -> {
-            if (PROPERTIES_WITH_BY_LANGUAGE_CONTAINER.contains(property)) {
-                if (FUNCTIONAL_PROPERTIES.contains(property)) {
-                    Map<String, String> valuesByLanguage = new HashMap<>();
-                    entity.getValues(property).forEach(value -> {
-                        if (value instanceof LocaleStringValue) {
-                            valuesByLanguage.put(((LocaleStringValue) value).getLanguageCode(), value.toString());
-                        } else {
-                            LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
-                        }
-                    });
-                    propertyValues.put(property, valuesByLanguage);
-                } else {
-                    Map<String, List<String>> valuesByLanguage = new HashMap<>();
-                    entity.getValues(property).forEach(value -> {
-                        if (value instanceof LocaleStringValue) {
-                            valuesByLanguage.computeIfAbsent(((LocaleStringValue) value).getLanguageCode(), k -> new ArrayList<>()).add(value.toString());
-                        } else {
-                            LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
-                        }
-                    });
-                    propertyValues.put(property, valuesByLanguage);
-                }
-                context.addPropertyContainer(property, "@language");
-            } else {
-                Stream<Object> values = entity.getValues(property).map(value -> {
-                    if (value.hasPlainSerialization()) {
-                        context.addPropertyRange(property, value.getType());
-                        return value.toString();
-                    } else if (withChildren && value instanceof EntityValue) {
-                        try {
-                            return entityLookup.getEntityForIRI(value.toString())
-                                    .map(e -> (Object) mapEntity(e, false, context))
-                                    .orElse(value);
-                        } catch (Exception e) {
-                            LOGGER.info(e.getMessage(), e);
-                        }
-                    }
-                    return value;
-                });
-                if (FUNCTIONAL_PROPERTIES.contains(property)) {
-                    values.findAny().ifPresent(value -> propertyValues.put(property, value));
-                } else {
-                    propertyValues.put(property, values.collect(Collectors.toList()));
-                }
-            }
-        });
+		entity.getProperties().stream().sorted().forEach(property -> {
+			if (PROPERTIES_WITH_BY_LANGUAGE_CONTAINER.contains(property)) {
+				if (FUNCTIONAL_PROPERTIES.contains(property)) {
+					Map<String, String> valuesByLanguage = new HashMap<>();
+					entity.getValues(property).forEach(value -> {
+						if (value instanceof LocaleStringValue) {
+							valuesByLanguage.put(((LocaleStringValue) value).getLanguageCode(), value.toString());
+						} else {
+							LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
+						}
+					});
+					propertyValues.put(property, valuesByLanguage);
+				} else {
+					Map<String, List<String>> valuesByLanguage = new HashMap<>();
+					entity.getValues(property).forEach(value -> {
+						if (value instanceof LocaleStringValue) {
+							valuesByLanguage.computeIfAbsent(((LocaleStringValue) value).getLanguageCode(), k -> new ArrayList<>()).add(value.toString());
+						} else {
+							LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
+						}
+					});
+					propertyValues.put(property, valuesByLanguage);
+				}
+				context.addPropertyContainer(property, "@language");
+			} else {
+				Stream<Object> values = entity.getValues(property).flatMap(value -> {
+					if (withChildren && value instanceof EntityValue) {
+						try {
+							return Stream.of(entityLookup.getEntityForIRI(value.toString())
+									.map(e -> (Object) mapEntity(e, false, context))
+									.orElse(value));
+						} catch (Exception e) {
+							LOGGER.info(e.getMessage(), e);
+						}
+					} else if (value instanceof CommonsFileValue) {
+						if (withChildren) {
+							try {
+								return Stream.of(commonsAPI.getImage(value.toString()));
+							} catch (Exception e) {
+								LOGGER.info(e.getMessage(), e);
+							}
+						}
+					} else if (value.hasPlainSerialization()) {
+						context.addPropertyRange(property, value.getType());
+						return Stream.of(value.toString());
+					} else {
+						return Stream.of(value);
+					}
+					return Stream.empty();
+				});
+				if (FUNCTIONAL_PROPERTIES.contains(property)) {
+					values.findAny().ifPresent(value -> propertyValues.put(property, value));
+				} else {
+					propertyValues.put(property, values.collect(Collectors.toList()));
+				}
+			}
+		});
 
-        if (withChildren) {
-            buildGeoValueFromKartographer(entity)
-                    .ifPresent(geoValue -> propertyValues.put("geo", geoValue));
-        }
+		if (withChildren) {
+			buildGeoValueFromKartographer(entity)
+					.ifPresent(geoValue -> propertyValues.put("geo", geoValue));
+		}
 
-        return new JsonLdEntity(entity.getIRI(), entity.getTypes().collect(Collectors.toList()), propertyValues);
-    }
+		return new JsonLdEntity(entity.getIRI(), entity.getTypes().collect(Collectors.toList()), propertyValues);
+	}
 
-    private Optional<Object> buildGeoValueFromKartographer(Entity entity) {
-        try {
-            //We only do geo shape lookup for Places in order to avoid unneeded requests
-            if (entity.getTypes().anyMatch(type -> type.equals("Place"))) {
+	private Optional<Object> buildGeoValueFromKartographer(Entity entity) {
+		try {
+			//We only do geo shape lookup for Places in order to avoid unneeded requests
+			if (entity.getTypes().anyMatch(type -> type.equals("Place"))) {
 				Geometry shape = KARTOGRAPHER_API.getShapeForItemId(Namespaces.expand(entity.getIRI()));
 				if (!shape.isEmpty()) {
-                    return Optional.of(GeoValue.buildGeoValue(shape));
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return Optional.empty();
-    }
+					return Optional.of(GeoValue.buildGeoValue(shape));
+				}
+			}
+		} catch (IOException e) {
+			LOGGER.error(e.getMessage(), e);
+		}
+		return Optional.empty();
+	}
 }

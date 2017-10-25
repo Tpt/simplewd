@@ -20,12 +20,13 @@ import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.Entity;
-import org.wikidata.simplewd.model.EntityLookup;
-import org.wikidata.simplewd.model.Namespaces;
+import org.wikidata.simplewd.api.CommonsAPI;
+import org.wikidata.simplewd.model.*;
 import org.wikidata.simplewd.model.value.*;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,10 +39,12 @@ public class EntityRenderer extends HTMLRenderer {
     private static final String BASE_URL = "/simplewd/v0/entity/";
 
     private EntityLookup entityLookup;
+    private CommonsAPI commonsAPI;
     private Locale locale;
 
-    public EntityRenderer(EntityLookup entityLookup, Locale locale) {
+    public EntityRenderer(EntityLookup entityLookup, CommonsAPI commonsAPI, Locale locale) {
         this.entityLookup = entityLookup;
+        this.commonsAPI = commonsAPI;
         this.locale = locale;
     }
 
@@ -58,18 +61,33 @@ public class EntityRenderer extends HTMLRenderer {
 
         String title = filterForLocale(entity, "name").findAny().map(LocaleStringValue::toString).orElse(entity.getIRI());
         Optional<DomContent> subtitle = filterForLocale(entity, "description").findAny().map(this::render);
+        Optional<CommonsImage> image = entity.getValue("image").flatMap(value -> {
+            try {
+                return Optional.of(commonsAPI.getImage(value.toString()));
+            } catch (IOException e) {
+                LOGGER.warn(e.getMessage(), e);
+                return Optional.empty();
+            }
+        });
 
-        ContainerTag card = div(
+        ContainerTag cardHeader = div(
                 section(
                         h1(title).attr("lang", locale.toLanguageTag()).withClasses("mdc-card__title", "mdc-card__title--large"),
                         subtitle.map(sub -> h2(sub).withClass("mdc-card__subtitle")).orElse(span())
                 ).withClass("mdc-card__primary")
-        ).withClass("mdc-card");
-
+        ).withClass("mdc-card__horizontal-block");
+        image.ifPresent(desc ->
+                cardHeader.with(a(img().withSrc(
+                        desc.getContentURI()).withClass("mdc-card__media-item")
+                ).withHref(desc.getDescriptionURI()))
+        );
+        ContainerTag card = div(cardHeader).withClass("mdc-card");
 
         //Generates the data table
         Map<Value, List<Value>> data = new HashMap<>();
-        data.put(new StringValue("type"), entity.getTypes().map(ConstantValue::new).collect(Collectors.toList()));
+        if (entity.getTypes().count() > 0) {
+            data.put(new StringValue("type"), entity.getTypes().map(ConstantValue::new).collect(Collectors.toList()));
+        }
         entity.getProperties().forEach(property ->
                 data.put(
                         new ConstantValue(property),
@@ -106,7 +124,9 @@ public class EntityRenderer extends HTMLRenderer {
     }
 
     private DomContent render(Value value) {
-        if (value instanceof CalendarValue) {
+        if (value instanceof CommonsFileValue) {
+            return render((CommonsFileValue) value);
+        } else if (value instanceof CalendarValue) {
             return render((CalendarValue) value);
         } else if (value instanceof ConstantValue) {
             return render((ConstantValue) value);
@@ -121,7 +141,17 @@ public class EntityRenderer extends HTMLRenderer {
         } else if (value instanceof URIValue) {
             return render((URIValue) value);
         } else {
-            throw new IllegalArgumentException("Not supported value: " + value.toString());
+            LOGGER.info("Not supported value: " + value.toString());
+            return text(value.toString());
+        }
+    }
+
+    private DomContent render(CommonsFileValue value) {
+        try {
+            String URL = "https://commons.wikimedia.org/wiki/File:" + URLEncoder.encode(value.toString().replace(" ", "_"), "UTF-8");
+            return a(value.toString()).withHref(URL);
+        } catch (UnsupportedEncodingException e) {
+            return text(value.toString());
         }
     }
 

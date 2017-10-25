@@ -38,6 +38,7 @@ public class MapperRegistry {
     private Map<PropertyIdValue, StatementMapper> buildMappers() {
         Map<PropertyIdValue, StatementMapper> mapperForProperty = new HashMap<>();
         //TODO: IMDB, LinkedIn, Myspace, Pinterest, Tumblr...
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P18"), new CommonsFileStatementMapper("image"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P19"), new ItemIdStatementMapper("birthPlace"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P20"), new ItemIdStatementMapper("deathPlace"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P21"), new ConstantStatementMapper("gender", ImmutableMap.of(

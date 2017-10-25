@@ -21,6 +21,7 @@ import io.javalin.HaltException;
 import io.javalin.Javalin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wikidata.simplewd.api.CommonsAPI;
 import org.wikidata.simplewd.api.WikidataAPI;
 import org.wikidata.simplewd.http.html.EntityRenderer;
 import org.wikidata.simplewd.http.html.MainRenderer;
@@ -39,13 +40,15 @@ public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private EntityLookup entityLookup;
+    private CommonsAPI commonsAPI;
     private JsonLdBuilder jsonLdBuilder;
     private EntityRenderer entityRenderer;
 
     private Main() throws IOException {
         entityLookup = new WikidataAPI();
-        jsonLdBuilder = new JsonLdBuilder(entityLookup);
-        entityRenderer = new EntityRenderer(entityLookup, Locale.ENGLISH);
+        commonsAPI = new CommonsAPI();
+        jsonLdBuilder = new JsonLdBuilder(entityLookup, commonsAPI);
+        entityRenderer = new EntityRenderer(entityLookup, commonsAPI, Locale.ENGLISH);
     }
 
     public static void main(String[] args) throws IOException {
