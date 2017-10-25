@@ -17,6 +17,7 @@
 package org.wikidata.simplewd.http.html;
 
 import j2html.tags.ContainerTag;
+import j2html.tags.DomContent;
 
 import static j2html.TagCreator.*;
 
@@ -26,11 +27,19 @@ public class MainRenderer extends HTMLRenderer {
                 p(join("SimpleWD provides a simple REST API that exposes Wikidata content in ", a("JSON-LD").withHref("https://json-ld.org"), " using the ", a("schema.org").withHref("https://schema.org"), " vocabulary.")),
                 p(join("The API documentation is available ", a("here").withHref("/simplewd/swagger.html"), ".")),
                 p(join("Some examples of entities rendered in HTML: ", ul(
-                        li(a("Douglas Adams").withHref("/simplewd/entity/wd:Q42")),
-                        li(a("Iron Man").withHref("/simplewd/entity/wd:Q192724")),
-                        li(a("Helsinki").withHref("/simplewd/entity/wd:Q1757"))
+                        example("wd:Q42", "Douglas Adams"),
+                        example("wd:Q192724", "Iron Man"),
+                        example("wd:Q1757", "Helsinki")
                 )))
         ).withClass("mdc-card__supporting-text")).withClass("mdc-card");
         return super.render("SimpleWD", "/simplewd", content);
+    }
+
+    private DomContent example(String id, String name) {
+        return li(join(
+                a(name).withHref("/simplewd/v0/entity/" + id),
+                " ",
+                a(small("(JSON)")).withHref("/simplewd/v0/entity/" + id + "?type=json")
+        ));
     }
 }
