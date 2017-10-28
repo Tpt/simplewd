@@ -83,17 +83,17 @@ public class Main {
         return (port != null) ? Integer.valueOf(port) : 7000;
     }
 
-    private static CONTENT_TYPE getResponseContentType(Context ctx) {
+    private static ContentType getResponseContentType(Context ctx) {
         String type = ctx.queryParam("format");
         if (type != null && type.length() > 0) {
             switch (type) {
                 case "json-ld":
                 case "jsonld":
-                    return CONTENT_TYPE.JSON_LD;
+                    return ContentType.JSON_LD;
                 case "json":
-                    return CONTENT_TYPE.JSON;
+                    return ContentType.JSON;
                 case "html":
-                    return CONTENT_TYPE.HTML;
+                    return ContentType.HTML;
                 default:
                     throw new HaltException(406, "The " + type + " format is not supported");
             }
@@ -102,15 +102,15 @@ public class Main {
         String accept = ctx.header("Accept");
         if (accept != null) {
             if (accept.contains("text/html")) {
-                return CONTENT_TYPE.HTML;
+                return ContentType.HTML;
             } else if (accept.contains("application/ld+json")) {
-                return CONTENT_TYPE.JSON_LD;
+                return ContentType.JSON_LD;
             } else if (accept.contains("application/json")) {
-                return CONTENT_TYPE.JSON;
+                return ContentType.JSON;
             }
         }
         if (accept == null || accept.length() == 0) {
-            return CONTENT_TYPE.JSON;
+            return ContentType.JSON;
         }
 
         throw new HaltException(406, "This endpoint only supports JSON and HTML");
@@ -136,7 +136,7 @@ public class Main {
         }
     }
 
-    private enum CONTENT_TYPE {
+    private enum ContentType {
         JSON_LD,
         JSON,
         HTML
