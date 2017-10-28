@@ -40,15 +40,19 @@ public class EntityRenderer extends HTMLRenderer {
 
     private EntityLookup entityLookup;
     private CommonsAPI commonsAPI;
-    private Locale locale;
+    private LocaleFilter localeFilter;
 
-    public EntityRenderer(EntityLookup entityLookup, CommonsAPI commonsAPI, Locale locale) {
+    public EntityRenderer(EntityLookup entityLookup, CommonsAPI commonsAPI) {
         this.entityLookup = entityLookup;
         this.commonsAPI = commonsAPI;
-        this.locale = locale;
     }
 
-    public String render(Entity entity) {
+    public String render(Entity entity, LocaleFilter localeFilter) {
+        this.localeFilter = localeFilter;
+        return render(entity);
+    }
+
+    private String render(Entity entity) {
         //We preload entities
         try {
             entityLookup.getEntitiesForIRI(entity.getClaims().map(Claim::getValue).flatMap(value ->
@@ -59,8 +63,8 @@ public class EntityRenderer extends HTMLRenderer {
         }
 
 
-        String title = filterForLocale(entity, "name").findAny().map(LocaleStringValue::toString).orElse(entity.getIRI());
-        Optional<DomContent> subtitle = filterForLocale(entity, "description").findAny().map(this::render);
+        DomContent title = localeFilter.getBestValues(entity.getValues("name")).findAny().map(this::render).orElse(text(entity.getIRI()));
+        Optional<DomContent> subtitle = localeFilter.getBestValues(entity.getValues("description")).findAny().map(this::render);
         Optional<CommonsImage> image = entity.getValue("image").flatMap(value -> {
             try {
                 return Optional.of(commonsAPI.getImage(value.toString()));
@@ -72,7 +76,7 @@ public class EntityRenderer extends HTMLRenderer {
 
         ContainerTag cardHeader = div(
                 section(
-                        h1(title).attr("lang", locale.toLanguageTag()).withClasses("mdc-card__title", "mdc-card__title--large"),
+                        h1(title).withClasses("mdc-card__title", "mdc-card__title--large"),
                         subtitle.map(sub -> h2(sub).withClass("mdc-card__subtitle")).orElse(span())
                 ).withClass("mdc-card__primary")
         ).withClass("mdc-card__horizontal-block");
@@ -114,13 +118,6 @@ public class EntityRenderer extends HTMLRenderer {
         ).withClasses("mdl-data-table", "mdc-elevation--z2");
 
         return super.render("SimpleWD - " + title, "", div(card, table));
-    }
-
-    private Stream<LocaleStringValue> filterForLocale(Entity entity, String property) {
-        return entity.getValues(property)
-                .filter(value -> value instanceof LocaleStringValue)
-                .map(value -> (LocaleStringValue) value)
-                .filter(value -> value.getLocale().equals(locale)); //TODO: get also sub-locale
     }
 
     private DomContent render(Value value) {
@@ -168,7 +165,7 @@ public class EntityRenderer extends HTMLRenderer {
     }
 
     private DomContent render(LocaleStringValue value) {
-        return span(value.toString()).attr("lang", value.getLanguageCode()).withTitle(value.getLocale().getDisplayName(locale));
+        return span(value.toString()).attr("lang", value.getLanguageCode()).withTitle(value.getLocale().getDisplayName(localeFilter.getBestLocale()));
     }
 
     private DomContent render(EntityValue value) {
@@ -176,9 +173,9 @@ public class EntityRenderer extends HTMLRenderer {
         try {
             return entityLookup.getEntityForIRI(value.toString())
                     .map(entity -> (DomContent)
-                            a(filterForLocale(entity, "name").findAny().map(Object::toString).orElseGet(value::toString))
+                            a(localeFilter.getBestValues(entity.getValues("name")).findAny().map(Object::toString).orElseGet(value::toString))
                                     .withHref(BASE_URL + value.toString())
-                                    .withTitle(filterForLocale(entity, "description").findAny().map(Object::toString).orElse(""))
+                                    .withTitle(localeFilter.getBestValues(entity.getValues("description")).findAny().map(Object::toString).orElse(""))
                     ).orElse(basicRendering);
         } catch (Exception e) {
             LOGGER.info(e.getMessage(), e);

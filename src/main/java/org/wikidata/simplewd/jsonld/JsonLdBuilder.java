@@ -22,10 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.CommonsAPI;
 import org.wikidata.simplewd.api.KartographerAPI;
-import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.Entity;
-import org.wikidata.simplewd.model.EntityLookup;
-import org.wikidata.simplewd.model.Namespaces;
+import org.wikidata.simplewd.model.*;
 import org.wikidata.simplewd.model.value.CommonsFileValue;
 import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.simplewd.model.value.GeoValue;
@@ -63,13 +60,13 @@ public class JsonLdBuilder {
 		this.commonsAPI = commonsAPI;
 	}
 
-	public JsonLdRoot<JsonLdEntity> buildEntity(Entity entity) {
-		JsonLdContext context = new JsonLdContext();
-		return new JsonLdRoot<>(context, mapEntity(entity, true, context));
-	}
+    public JsonLdRoot<JsonLdEntity> buildEntity(Entity entity, LocaleFilter localeFilter) {
+        JsonLdContext context = new JsonLdContext();
+        return new JsonLdRoot<>(context, mapEntity(entity, true, localeFilter, context));
+    }
 
-	private JsonLdEntity mapEntity(Entity entity, boolean withChildren, JsonLdContext context) {
-		Map<String, Object> propertyValues = new HashMap<>();
+    private JsonLdEntity mapEntity(Entity entity, boolean withChildren, LocaleFilter localeFilter, JsonLdContext context) {
+        Map<String, Object> propertyValues = new HashMap<>();
 
 		if (withChildren) {
 			//We preload entities
@@ -84,35 +81,50 @@ public class JsonLdBuilder {
 
 		entity.getProperties().stream().sorted().forEach(property -> {
 			if (PROPERTIES_WITH_BY_LANGUAGE_CONTAINER.contains(property)) {
-				if (FUNCTIONAL_PROPERTIES.contains(property)) {
-					Map<String, String> valuesByLanguage = new HashMap<>();
-					entity.getValues(property).forEach(value -> {
-						if (value instanceof LocaleStringValue) {
-							valuesByLanguage.put(((LocaleStringValue) value).getLanguageCode(), value.toString());
-						} else {
-							LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
-						}
-					});
-					propertyValues.put(property, valuesByLanguage);
-				} else {
-					Map<String, List<String>> valuesByLanguage = new HashMap<>();
-					entity.getValues(property).forEach(value -> {
-						if (value instanceof LocaleStringValue) {
-							valuesByLanguage.computeIfAbsent(((LocaleStringValue) value).getLanguageCode(), k -> new ArrayList<>()).add(value.toString());
-						} else {
-							LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
-						}
-					});
-					propertyValues.put(property, valuesByLanguage);
-				}
-				context.addPropertyContainer(property, "@language");
-			} else {
+                if (localeFilter.isMultilingualAccepted()) {
+                    if (FUNCTIONAL_PROPERTIES.contains(property)) {
+                        Map<String, String> valuesByLanguage = new HashMap<>();
+                        entity.getValues(property).forEach(value -> {
+                            if (value instanceof LocaleStringValue) {
+                                valuesByLanguage.put(((LocaleStringValue) value).getLanguageCode(), value.toString());
+                            } else {
+                                LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
+                            }
+                        });
+                        propertyValues.put(property, valuesByLanguage);
+                    } else {
+                        Map<String, List<String>> valuesByLanguage = new HashMap<>();
+                        entity.getValues(property).forEach(value -> {
+                            if (value instanceof LocaleStringValue) {
+                                valuesByLanguage.computeIfAbsent(((LocaleStringValue) value).getLanguageCode(), k -> new ArrayList<>()).add(value.toString());
+                            } else {
+                                LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
+                            }
+                        });
+                        propertyValues.put(property, valuesByLanguage);
+                    }
+                    context.addLanguageContainerToProperty(property);
+                } else {
+                    if (FUNCTIONAL_PROPERTIES.contains(property)) {
+                        localeFilter.getBestValues(entity.getValues(property)).findAny().ifPresent(value -> {
+                            propertyValues.put(property, value.toString());
+                            context.addPropertyLocale(property, value.getLocale());
+                        });
+                    } else {
+                        propertyValues.put(property,
+                                localeFilter.getBestValues(entity.getValues(property))
+                                        .peek(value -> context.addPropertyLocale(property, value.getLocale()))
+                                        .map(Object::toString)
+                                        .toArray(String[]::new));
+                    }
+                }
+            } else {
 				Stream<Object> values = entity.getValues(property).flatMap(value -> {
 					if (withChildren && value instanceof EntityValue) {
 						try {
 							return Stream.of(entityLookup.getEntityForIRI(value.toString())
-									.map(e -> (Object) mapEntity(e, false, context))
-									.orElse(value));
+                                    .map(e -> (Object) mapEntity(e, false, localeFilter, context))
+                                    .orElse(value));
 						} catch (Exception e) {
 							LOGGER.info(e.getMessage(), e);
 						}

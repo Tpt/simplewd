@@ -31,10 +31,10 @@ import org.wikidata.simplewd.jsonld.JsonLdEntity;
 import org.wikidata.simplewd.jsonld.JsonLdRoot;
 import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.EntityLookup;
+import org.wikidata.simplewd.model.LocaleFilter;
 import org.wikidata.simplewd.model.Namespaces;
 
 import java.io.IOException;
-import java.util.Locale;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
@@ -48,7 +48,7 @@ public class Main {
         entityLookup = new WikidataAPI();
         commonsAPI = new CommonsAPI();
         jsonLdBuilder = new JsonLdBuilder(entityLookup, commonsAPI);
-        entityRenderer = new EntityRenderer(entityLookup, commonsAPI, Locale.ENGLISH);
+        entityRenderer = new EntityRenderer(entityLookup, commonsAPI);
     }
 
     public static void main(String[] args) throws IOException {
@@ -61,16 +61,17 @@ public class Main {
                 .get("/simplewd/swagger.html", ctx -> ctx.html((new SwaggerRenderer()).render()))
                 .get("/simplewd/entity/:id", ctx -> ctx.redirect("/simplewd/v0/entity/" + ctx.param("id")))
                 .get("/simplewd/v0/entity/:id", ctx -> {
+                    LocaleFilter localeFilter = getLocaleFilter(ctx);
                     switch (getResponseContentType(ctx)) {
                         case JSON_LD:
-                            ctx.json(main.getResourceAsJson(ctx.param("id")));
+                            ctx.json(main.getResourceAsJson(ctx.param("id"), localeFilter));
                             ctx.contentType("application/ld+json");
                             break;
                         case JSON:
-                            ctx.json(main.getResourceAsJson(ctx.param("id")).getContent());
+                            ctx.json(main.getResourceAsJson(ctx.param("id"), localeFilter).getContent());
                             break;
                         case HTML:
-                            ctx.html(main.getResourceAsHTML(ctx.param("id")));
+                            ctx.html(main.getResourceAsHTML(ctx.param("id"), localeFilter));
                             break;
                     }
                 })
@@ -116,12 +117,28 @@ public class Main {
         throw new HaltException(406, "This endpoint only supports JSON and HTML");
     }
 
-    private JsonLdRoot<JsonLdEntity> getResourceAsJson(String id) {
-        return jsonLdBuilder.buildEntity(getResource(id));
+    private static LocaleFilter getLocaleFilter(Context ctx) {
+        String acceptLanguage = ctx.queryParam("lang");
+        if (acceptLanguage == null || acceptLanguage.length() == 0) {
+            acceptLanguage = ctx.header("Accept-Language");
+        }
+        if (acceptLanguage == null || acceptLanguage.length() == 0) {
+            acceptLanguage = "mul";
+        }
+        
+        try {
+            return new LocaleFilter(acceptLanguage);
+        } catch (IllegalArgumentException e) {
+            throw new HaltException(400, "Your Accept-Language header is not valid");
+        }
     }
 
-    private String getResourceAsHTML(String id) {
-        return entityRenderer.render(getResource(id));
+    private JsonLdRoot<JsonLdEntity> getResourceAsJson(String id, LocaleFilter localeFilter) {
+        return jsonLdBuilder.buildEntity(getResource(id), localeFilter);
+    }
+
+    private String getResourceAsHTML(String id, LocaleFilter localeFilter) {
+        return entityRenderer.render(getResource(id), localeFilter);
     }
 
     private Entity getResource(String id) {
