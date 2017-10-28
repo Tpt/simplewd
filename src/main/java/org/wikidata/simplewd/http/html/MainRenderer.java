@@ -39,7 +39,9 @@ public class MainRenderer extends HTMLRenderer {
         return li(join(
                 a(name).withHref("/simplewd/v0/entity/" + id),
                 " ",
-                a(small("(JSON)")).withHref("/simplewd/v0/entity/" + id + "?type=json")
+                a(small("(JSON)")).withHref("/simplewd/v0/entity/" + id + "?format=json"),
+                " ",
+                a(small("(JSON-LD)")).withHref("/simplewd/v0/entity/" + id + "?format=jsonld")
         ));
     }
 }

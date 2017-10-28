@@ -67,7 +67,7 @@ public class Main {
                             ctx.contentType("application/ld+json");
                             break;
                         case JSON:
-                            ctx.json(main.getResourceAsJson(ctx.param("id")));
+                            ctx.json(main.getResourceAsJson(ctx.param("id")).getContent());
                             break;
                         case HTML:
                             ctx.html(main.getResourceAsHTML(ctx.param("id")));
@@ -84,7 +84,7 @@ public class Main {
     }
 
     private static CONTENT_TYPE getResponseContentType(Context ctx) {
-        String type = ctx.queryParam("type");
+        String type = ctx.queryParam("format");
         if (type != null && type.length() > 0) {
             switch (type) {
                 case "json-ld":
