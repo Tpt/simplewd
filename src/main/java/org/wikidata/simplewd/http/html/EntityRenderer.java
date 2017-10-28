@@ -63,8 +63,8 @@ public class EntityRenderer extends HTMLRenderer {
         }
 
 
-        DomContent title = localeFilter.getBestValues(entity.getValues("name")).findAny().map(this::render).orElse(text(entity.getIRI()));
-        Optional<DomContent> subtitle = localeFilter.getBestValues(entity.getValues("description")).findAny().map(this::render);
+        DomContent title = localeFilter.getBestValues(entity.getValues("name")).findAny().map(this::simpleRender).orElse(text(entity.getIRI()));
+        Optional<DomContent> subtitle = localeFilter.getBestValues(entity.getValues("description")).findAny().map(this::simpleRender);
         Optional<CommonsImage> image = entity.getValue("image").flatMap(value -> {
             try {
                 return Optional.of(commonsAPI.getImage(value.toString()));
@@ -165,7 +165,14 @@ public class EntityRenderer extends HTMLRenderer {
     }
 
     private DomContent render(LocaleStringValue value) {
-        return span(value.toString()).attr("lang", value.getLanguageCode()).withTitle(value.getLocale().getDisplayName(localeFilter.getBestLocale()));
+        return span(join(
+                value.toString(),
+                sup(join("(", value.getLocale().getDisplayName(localeFilter.getBestLocale()), ")"))
+        )).attr("lang", value.getLanguageCode());
+    }
+
+    private DomContent simpleRender(LocaleStringValue value) {
+        return span(value.toString()).attr("lang", value.getLanguageCode());
     }
 
     private DomContent render(EntityValue value) {
