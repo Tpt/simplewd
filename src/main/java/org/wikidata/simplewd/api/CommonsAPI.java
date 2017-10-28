@@ -60,13 +60,10 @@ public class CommonsAPI {
         JsonNode rootNode = OBJECT_MAPPER.readTree(apiURL.openStream());
         if (rootNode.isObject() && rootNode.has("query")) {
             JsonNode queryNode = rootNode.get("query");
-            System.out.println("query:" + OBJECT_MAPPER.writeValueAsString(queryNode));
             if (queryNode.isObject() && queryNode.has("pages")) {
                 for (JsonNode pageNode : queryNode.get("pages")) {
-                    System.out.println("page:" + OBJECT_MAPPER.writeValueAsString(pageNode));
                     if (pageNode.isObject() && pageNode.has("imageinfo")) {
                         for (JsonNode infoNode : pageNode.get("imageinfo")) {
-                            System.out.println("imageinfo:" + OBJECT_MAPPER.writeValueAsString(infoNode));
                             CommonsImage.License license = null;
                             if (infoNode.has("extmetadata")) {
                                 JsonNode metadata = infoNode.get("extmetadata");
