@@ -25,7 +25,7 @@ public class MainRenderer extends HTMLRenderer {
     public String render() {
         ContainerTag content = div(section(
                 p(join("SimpleWD provides a simple REST API that exposes Wikidata content in ", a("JSON-LD").withHref("https://json-ld.org"), " using the ", a("schema.org").withHref("https://schema.org"), " vocabulary.")),
-                p(join("The API documentation is available ", a("here").withHref("/simplewd/swagger.html"), ".")),
+                p(join("The API documentation is available ", a("here").withHref("/simplewd/swagger.html"), " and the source code and bug tracker ", a("on GitHub").withHref("https://github.com/Tpt/simplewd/"), ".")),
                 p(join("Some examples of entities rendered in HTML: ", ul(
                         example("wd:Q42", "Douglas Adams"),
                         example("wd:Q192724", "Iron Man"),
