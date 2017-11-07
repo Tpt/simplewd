@@ -19,6 +19,7 @@ package org.wikidata.simplewd.model;
 import org.wikidata.simplewd.model.value.*;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigInteger;
 import java.net.URI;
 import java.util.Locale;
 
@@ -49,6 +50,10 @@ public class Claim {
 
     public Claim(String property, URI value) {
         this(property, new URIValue(value));
+    }
+
+    public Claim(String property, BigInteger value) {
+        this(property, new IntegerValue(value));
     }
 
     public String getProperty() {

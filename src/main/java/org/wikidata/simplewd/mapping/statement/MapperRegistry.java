@@ -114,6 +114,7 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P966"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/label/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P982"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/area/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1004"), new ExternalIdentifierStatementMapper("http://musicbrainz.org/place/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1113"), new IntegerStatementMapper("numberOfEpisodes"));
         //TODO: P1191: firstPerformance move the statement to an Event using qualifiers
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1243"), new StringStatementMapper("isrcCode", "[A-Z]{2}[A-Z0-9]{3}[0-9]{7}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P1278"), new StringStatementMapper("leiCode", "[0-9A-Z]{18}[0-9]{2}"));
@@ -139,6 +140,7 @@ public class MapperRegistry {
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2205"), new ExternalIdentifierStatementMapper("http://open.spotify.com/album/$1", "[0-9A-Za-z]{22}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2207"), new ExternalIdentifierStatementMapper("http://open.spotify.com/track/$1", "[0-9A-Za-z]{22}"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2397"), new ExternalIdentifierStatementMapper("http://www.youtube.com/channel/$1", "UC([A-Za-z0-9_\\-]){22}"));
+        mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2437"), new IntegerStatementMapper("numberOfSeasons"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2671"), new ExternalIdentifierStatementMapper("http://g.co/kg$1", "\\/g\\/[0-9a-zA-Z]+"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2847"), new ExternalIdentifierStatementMapper("http://plus.google.com/$1", "\\d{22}|\\+[-\\w_\\u00C0-\\u00FF]+"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue("P2360"), new ItemIdStatementMapper("audience"));
