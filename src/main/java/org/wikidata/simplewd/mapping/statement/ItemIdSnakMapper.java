@@ -17,7 +17,8 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
+import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
+import org.wikidata.wdtk.datamodel.interfaces.Snak;
 import org.wikidata.wdtk.datamodel.interfaces.Value;
 
 import java.util.stream.Stream;
@@ -25,15 +26,19 @@ import java.util.stream.Stream;
 /**
  * @author Thomas Pellissier Tanon
  */
-interface StatementMainGlobeCoordinatesValueMapper extends StatementMainValueMapper {
+interface ItemIdSnakMapper extends SnakMapper {
 
     @Override
-    default Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException {
-        if (!(value instanceof GlobeCoordinatesValue)) {
-            throw new InvalidWikibaseValueException(value + " should be a GlobeCoordinatesValue");
+    default Stream<Claim> mapSnak(Snak snak) throws InvalidWikibaseValueException {
+        Value value = snak.getValue();
+        if (value == null) {
+            return Stream.empty();
         }
-        return mapMainGlobeCoordinatesValue((GlobeCoordinatesValue) value);
+        if (!(value instanceof ItemIdValue)) {
+            throw new InvalidWikibaseValueException(value + " should be a ItemIdValue");
+        }
+        return mapItemIdValue((ItemIdValue) value);
     }
 
-    Stream<Claim> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException;
+    Stream<Claim> mapItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException;
 }

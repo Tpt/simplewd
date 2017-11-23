@@ -28,9 +28,8 @@ import org.wikidata.wdtk.datamodel.interfaces.*;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Stream;
 
 public class ItemMapper {
 
@@ -78,22 +77,20 @@ public class ItemMapper {
 
     private void addStatementsToResource(StatementDocument statementDocument, Entity entity) {
         statementDocument.getStatementGroups().forEach(group ->
-                getBestStatements(group).forEach(statement ->
-                        mapperRegistry.getMapperForProperty(statement.getClaim().getMainSnak().getPropertyId()).ifPresent(mapper -> {
-                            try {
-                                mapper.mapStatement(statement).forEach(entity::addClaim);
-                            } catch (InvalidWikibaseValueException e) {
-                                //LOGGER.warn(e.getMessage(), e);
-                            }
-                        })
-                )
+                mapperRegistry.getMapperForProperty(group.getProperty()).ifPresent(mapper -> {
+                    Stream<Statement> statements = mapper.onlyBestRank()
+                            ? getBestStatements(group).stream()
+                            : group.getStatements().stream().filter(statement -> !statement.getRank().equals(StatementRank.DEPRECATED));
+                    statements.flatMap(statement -> {
+                        try {
+                            return mapper.mapStatement(statement);
+                        } catch (InvalidWikibaseValueException e) {
+                            //LOGGER.warn(e.getMessage(), e);
+                            return Stream.empty();
+                        }
+                    }).forEach(entity::addClaim);
+                })
         );
-    }
-
-    private List<Statement> getBestStatements(StatementDocument statementDocument, PropertyIdValue property) {
-        return Optional.ofNullable(statementDocument.findStatementGroup(property))
-                .map(this::getBestStatements)
-                .orElse(Collections.emptyList());
     }
 
     private List<Statement> getBestStatements(StatementGroup statementGroup) {
@@ -106,11 +103,7 @@ public class ItemMapper {
                 normals.add(statement);
             }
         }
-        if (preferred.isEmpty()) {
-            return normals;
-        } else {
-            return preferred;
-        }
+        return preferred.isEmpty() ? normals : preferred;
     }
 
     private LocaleStringValue convert(MonolingualTextValue value) {

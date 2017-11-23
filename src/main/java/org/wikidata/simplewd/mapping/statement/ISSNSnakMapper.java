@@ -16,25 +16,23 @@
 
 package org.wikidata.simplewd.mapping.statement;
 
+import org.apache.commons.validator.routines.ISSNValidator;
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.wdtk.datamodel.interfaces.QuantityValue;
-import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
-import org.wikidata.wdtk.datamodel.interfaces.Value;
+import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-interface StatementMainQuantityValueMapper extends StatementMainValueMapper {
+class ISSNSnakMapper implements StringSnakMapper {
 
     @Override
-    default Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException {
-        if (!(value instanceof QuantityValue)) {
-            throw new InvalidWikibaseValueException(value + " should be a QuantityValue");
+    public Stream<Claim> mapStringValue(StringValue value) throws InvalidWikibaseValueException {
+        String ISSN = (String) ISSNValidator.getInstance().validate(value.getString());
+        if (ISSN == null) {
+            throw new InvalidWikibaseValueException(value.getString() + " is an invalid ISSN");
         }
-        return mapMainQuantityValue((QuantityValue) value);
+        return Stream.of(new Claim("issn", ISSN));
     }
-
-    Stream<Claim> mapMainQuantityValue(QuantityValue value) throws InvalidWikibaseValueException;
 }

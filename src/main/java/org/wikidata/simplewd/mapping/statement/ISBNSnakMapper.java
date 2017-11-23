@@ -16,24 +16,23 @@
 
 package org.wikidata.simplewd.mapping.statement;
 
+import org.apache.commons.validator.routines.ISBNValidator;
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
-import org.wikidata.wdtk.datamodel.interfaces.Value;
+import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-interface StatementMainTimeValueMapper extends StatementMainValueMapper {
+class ISBNSnakMapper implements StringSnakMapper {
 
     @Override
-    default Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException {
-        if (!(value instanceof TimeValue)) {
-            throw new InvalidWikibaseValueException(value + " should be a TimeValue");
+    public Stream<Claim> mapStringValue(StringValue value) throws InvalidWikibaseValueException {
+        String ISBN = ISBNValidator.getInstance().validate(value.getString());
+        if (ISBN == null) {
+            throw new InvalidWikibaseValueException(value.getString() + " is an invalid ISBN");
         }
-        return mapMainTimeValue((TimeValue) value);
+        return Stream.of(new Claim("isbn", ISBN));
     }
-
-    Stream<Claim> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException;
 }

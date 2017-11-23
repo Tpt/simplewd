@@ -18,23 +18,27 @@ package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
-import org.wikidata.wdtk.datamodel.interfaces.Value;
 
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-interface StatementMainValueMapper extends StatementMapper {
+class TruthyStatementMapper implements StatementMapper {
 
-    @Override
-    default Stream<Claim> mapStatement(Statement statement) throws InvalidWikibaseValueException {
-        Value value = statement.getValue();
-        if (value == null) {
-            return Stream.empty();
-        }
-        return mapMainValue(value);
+    private SnakMapper mainSnakMapper;
+
+    TruthyStatementMapper(SnakMapper mainSnakMapper) {
+        this.mainSnakMapper = mainSnakMapper;
     }
 
-    Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException;
+    @Override
+    public Stream<Claim> mapStatement(Statement statement) throws InvalidWikibaseValueException {
+        return mainSnakMapper.mapSnak(statement.getClaim().getMainSnak());
+    }
+
+    @Override
+    public boolean onlyBestRank() {
+        return true;
+    }
 }

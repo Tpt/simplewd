@@ -16,23 +16,29 @@
 
 package org.wikidata.simplewd.mapping.statement;
 
-import org.apache.commons.validator.routines.ISBNValidator;
 import org.wikidata.simplewd.model.Claim;
+import org.wikidata.wdtk.datamodel.interfaces.Snak;
 import org.wikidata.wdtk.datamodel.interfaces.StringValue;
+import org.wikidata.wdtk.datamodel.interfaces.Value;
 
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class ISBNStatementMapper implements StatementMainStringValueMapper {
+interface StringSnakMapper extends SnakMapper {
 
     @Override
-    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
-        String ISBN = ISBNValidator.getInstance().validate(value.getString());
-        if (ISBN == null) {
-            throw new InvalidWikibaseValueException(value.getString() + " is an invalid ISBN");
+    default Stream<Claim> mapSnak(Snak snak) throws InvalidWikibaseValueException {
+        Value value = snak.getValue();
+        if (value == null) {
+            return Stream.empty();
         }
-        return Stream.of(new Claim("isbn", ISBN));
+        if (!(value instanceof StringValue)) {
+            throw new InvalidWikibaseValueException(value + " should be a StringValue");
+        }
+        return mapStringValue((StringValue) value);
     }
+
+    Stream<Claim> mapStringValue(StringValue value) throws InvalidWikibaseValueException;
 }

@@ -18,16 +18,14 @@ package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
 import org.wikidata.wdtk.datamodel.interfaces.QuantityValue;
-import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
 import java.math.BigDecimal;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class IntegerStatementMapper implements StatementMainQuantityValueMapper {
+class IntegerStatementMapper implements QuantitySnakMapper {
 
     private String targetFieldName;
 
@@ -36,7 +34,7 @@ class IntegerStatementMapper implements StatementMainQuantityValueMapper {
     }
 
     @Override
-    public Stream<Claim> mapMainQuantityValue(QuantityValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapQuantityValue(QuantityValue value) throws InvalidWikibaseValueException {
         if (!isNullOrZero(value.getLowerBound()) || !isNullOrZero(value.getUpperBound())) {
             throw new InvalidWikibaseValueException(value + " has not null precision bounds.");
         }

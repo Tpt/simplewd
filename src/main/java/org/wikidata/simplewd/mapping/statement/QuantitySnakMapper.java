@@ -17,7 +17,8 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.wdtk.datamodel.interfaces.StringValue;
+import org.wikidata.wdtk.datamodel.interfaces.QuantityValue;
+import org.wikidata.wdtk.datamodel.interfaces.Snak;
 import org.wikidata.wdtk.datamodel.interfaces.Value;
 
 import java.util.stream.Stream;
@@ -25,15 +26,19 @@ import java.util.stream.Stream;
 /**
  * @author Thomas Pellissier Tanon
  */
-interface StatementMainStringValueMapper extends StatementMainValueMapper {
+interface QuantitySnakMapper extends SnakMapper {
 
     @Override
-    default Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException {
-        if (!(value instanceof StringValue)) {
-            throw new InvalidWikibaseValueException(value + " should be a StringValue");
+    default Stream<Claim> mapSnak(Snak snak) throws InvalidWikibaseValueException {
+        Value value = snak.getValue();
+        if (value == null) {
+            return Stream.empty();
         }
-        return mapMainStringValue((StringValue) value);
+        if (!(value instanceof QuantityValue)) {
+            throw new InvalidWikibaseValueException(value + " should be a QuantityValue");
+        }
+        return mapQuantityValue((QuantityValue) value);
     }
 
-    Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException;
+    Stream<Claim> mapQuantityValue(QuantityValue value) throws InvalidWikibaseValueException;
 }

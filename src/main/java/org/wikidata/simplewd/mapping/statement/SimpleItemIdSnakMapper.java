@@ -17,34 +17,24 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.wdtk.datamodel.interfaces.StringValue;
+import org.wikidata.simplewd.model.value.EntityValue;
+import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class StringStatementMapper implements StatementMainStringValueMapper {
+class SimpleItemIdSnakMapper implements ItemIdSnakMapper {
 
     private String targetFieldName;
-    private Pattern pattern;
 
-    StringStatementMapper(String targetFieldName, String pattern) {
-        this.targetFieldName = targetFieldName;
-        this.pattern = Pattern.compile(pattern);
-    }
-
-    StringStatementMapper(String targetFieldName) {
+    SimpleItemIdSnakMapper(String targetFieldName) {
         this.targetFieldName = targetFieldName;
     }
 
     @Override
-    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
-        if (pattern != null && !pattern.matcher(value.getString()).matches()) {
-            throw new InvalidWikibaseValueException(value + " is not a valid string value. It does not matches the pattern " + pattern);
-        }
-        return Stream.of(new Claim(targetFieldName, value.getString()));
+    public Stream<Claim> mapItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
+        return Stream.of(new Claim(targetFieldName, new EntityValue(value.getIri())));
     }
 }
-

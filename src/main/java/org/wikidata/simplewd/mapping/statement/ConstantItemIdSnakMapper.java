@@ -17,25 +17,33 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.value.CommonsFileValue;
-import org.wikidata.wdtk.datamodel.interfaces.StringValue;
+import org.wikidata.simplewd.model.value.ConstantValue;
+import org.wikidata.wdtk.datamodel.helpers.Datamodel;
+import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class CommonsFileStatementMapper implements StatementMainStringValueMapper {
+class ConstantItemIdSnakMapper implements ItemIdSnakMapper {
 
     private String targetFieldName;
+    private Map<ItemIdValue, ConstantValue> mapping;
 
-    CommonsFileStatementMapper(String targetFieldName) {
+    ConstantItemIdSnakMapper(String targetFieldName, Map<String, String> mapping) {
         this.targetFieldName = targetFieldName;
+        this.mapping = new HashMap<>();
+        mapping.forEach((k, v) -> this.mapping.put(Datamodel.makeWikidataItemIdValue(k), new ConstantValue(v)));
     }
 
     @Override
-    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
-        return Stream.of(new Claim(targetFieldName, new CommonsFileValue(value.getString())));
+    public Stream<Claim> mapItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
+        if (!mapping.containsKey(value)) {
+            throw new InvalidWikibaseValueException("No conversion for key: " + value.toString());
+        }
+        return Stream.of(new Claim(targetFieldName, mapping.get(value)));
     }
 }
-

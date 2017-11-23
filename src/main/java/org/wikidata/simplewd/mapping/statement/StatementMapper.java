@@ -26,4 +26,6 @@ import java.util.stream.Stream;
  */
 public interface StatementMapper {
     Stream<Claim> mapStatement(Statement statement) throws InvalidWikibaseValueException;
+
+    boolean onlyBestRank();
 }

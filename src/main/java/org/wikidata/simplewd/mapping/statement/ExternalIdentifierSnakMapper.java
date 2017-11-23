@@ -27,17 +27,17 @@ import java.util.stream.Stream;
 /**
  * @author Thomas Pellissier Tanon
  */
-class ExternalIdentifierStatementMapper implements StatementMainStringValueMapper {
+class ExternalIdentifierSnakMapper implements StringSnakMapper {
     private String URITemplate;
     private Pattern pattern;
 
-    ExternalIdentifierStatementMapper(String URITemplate, String pattern) {
+    ExternalIdentifierSnakMapper(String URITemplate, String pattern) {
         this.URITemplate = URITemplate;
         this.pattern = Pattern.compile(pattern);
     }
 
     @Override
-    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapStringValue(StringValue value) throws InvalidWikibaseValueException {
         if (!pattern.matcher(value.getString()).matches()) {
             throw new InvalidWikibaseValueException(value + " is not a valid identifier. It does not matches the pattern " + pattern);
         }

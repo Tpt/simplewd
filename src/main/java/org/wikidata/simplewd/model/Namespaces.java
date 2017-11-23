@@ -38,6 +38,7 @@ public class Namespaces {
         NAMESPACES.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
         NAMESPACES.put("schema", "http://schema.org/");
         NAMESPACES.put("wd", "http://www.wikidata.org/entity/");
+        NAMESPACES.put("wds", "http://www.wikidata.org/entity/statement/");
         NAMESPACES.put("xsd", "http://www.w3.org/2001/XMLSchema#");
     }
 

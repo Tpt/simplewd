@@ -23,11 +23,11 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wikidata.simplewd.api.WikidataAPI;
 import org.wikidata.simplewd.model.Claim;
 import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
-import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 /**
  * @author Thomas Pellissier Tanon
  */
-public class TypeMapper implements StatementMainItemIdValueMapper {
+public class TypeMapper implements ItemIdSnakMapper {
 
     private static final Set<ItemIdValue> FILTERED_TYPES = Sets.newHashSet(
             Datamodel.makeWikidataItemIdValue("Q17379835"),  //Wikimedia page outside the main knowledge tree
@@ -179,7 +179,7 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
     }
 
     @Override
-    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
         return mapClass(value).stream()
                 .map(type -> new Claim("@type", new EntityValue(type)));
     }
@@ -233,7 +233,7 @@ public class TypeMapper implements StatementMainItemIdValueMapper {
 
     private ItemIdValue[] retrieveSuperClasses(ItemIdValue itemId) {
         try {
-            EntityDocument document = WikibaseDataFetcher.getWikidataDataFetcher().getEntityDocument(itemId.getId());
+            EntityDocument document = WikidataAPI.getDataFetcher().getEntityDocument(itemId.getId());
             if (document instanceof ItemDocument) {
                 ItemDocument itemDocument = (ItemDocument) document;
                 StatementGroup statementGroup = itemDocument.findStatementGroup("P279");

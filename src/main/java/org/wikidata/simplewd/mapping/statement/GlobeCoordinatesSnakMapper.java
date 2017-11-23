@@ -22,23 +22,37 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import org.wikidata.simplewd.model.Claim;
 import org.wikidata.simplewd.model.value.GeoValue;
 import org.wikidata.wdtk.datamodel.interfaces.GlobeCoordinatesValue;
+import org.wikidata.wdtk.datamodel.interfaces.Snak;
+import org.wikidata.wdtk.datamodel.interfaces.Value;
 
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class GlobeCoordinatesStatementMapper implements StatementMainGlobeCoordinatesValueMapper {
+class GlobeCoordinatesSnakMapper implements SnakMapper {
+
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
 
     private String targetFieldName;
 
-    GlobeCoordinatesStatementMapper(String targetFieldName) {
+    GlobeCoordinatesSnakMapper(String targetFieldName) {
         this.targetFieldName = targetFieldName;
     }
 
     @Override
-    public Stream<Claim> mapMainGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapSnak(Snak snak) throws InvalidWikibaseValueException {
+        Value value = snak.getValue();
+        if (value == null) {
+            return Stream.empty();
+        }
+        if (!(value instanceof GlobeCoordinatesValue)) {
+            throw new InvalidWikibaseValueException(value + " should be a GlobeCoordinatesValue");
+        }
+        return mapGlobeCoordinatesValue((GlobeCoordinatesValue) value);
+    }
+
+    Stream<Claim> mapGlobeCoordinatesValue(GlobeCoordinatesValue value) throws InvalidWikibaseValueException {
         if (!value.getGlobe().equals(GlobeCoordinatesValue.GLOBE_EARTH)) {
             return Stream.empty(); //TODO: support other globes
         }

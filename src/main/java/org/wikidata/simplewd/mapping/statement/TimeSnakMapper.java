@@ -17,7 +17,9 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
+import org.wikidata.wdtk.datamodel.interfaces.Snak;
 import org.wikidata.wdtk.datamodel.interfaces.TimeValue;
+import org.wikidata.wdtk.datamodel.interfaces.Value;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeConstants;
@@ -29,7 +31,7 @@ import java.util.stream.Stream;
 /**
  * @author Thomas Pellissier Tanon
  */
-class TimeStatementMapper implements StatementMainTimeValueMapper {
+class TimeSnakMapper implements SnakMapper {
 
     private static DatatypeFactory DATATYPE_FACTORY;
 
@@ -43,12 +45,23 @@ class TimeStatementMapper implements StatementMainTimeValueMapper {
 
     private String targetFieldName;
 
-    TimeStatementMapper(String targetFieldName) {
+    TimeSnakMapper(String targetFieldName) {
         this.targetFieldName = targetFieldName;
     }
 
     @Override
-    public Stream<Claim> mapMainTimeValue(TimeValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapSnak(Snak snak) throws InvalidWikibaseValueException {
+        Value value = snak.getValue();
+        if (value == null) {
+            return Stream.empty();
+        }
+        if (!(value instanceof TimeValue)) {
+            throw new InvalidWikibaseValueException(value + " should be a TimeValue");
+        }
+        return mapTimeValue((TimeValue) value);
+    }
+
+    private Stream<Claim> mapTimeValue(TimeValue value) throws InvalidWikibaseValueException {
         return convertTimeValue(value).map(calendarValue ->
                 new Claim(targetFieldName, calendarValue)
         );

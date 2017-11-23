@@ -17,33 +17,34 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.value.ConstantValue;
-import org.wikidata.wdtk.datamodel.helpers.Datamodel;
-import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
+import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class ConstantStatementMapper implements StatementMainItemIdValueMapper {
+class SimpleStringSnakMapper implements StringSnakMapper {
 
     private String targetFieldName;
-    private Map<ItemIdValue, ConstantValue> mapping;
+    private Pattern pattern;
 
-    ConstantStatementMapper(String targetFieldName, Map<String, String> mapping) {
+    SimpleStringSnakMapper(String targetFieldName, String pattern) {
         this.targetFieldName = targetFieldName;
-        this.mapping = new HashMap<>();
-        mapping.forEach((k, v) -> this.mapping.put(Datamodel.makeWikidataItemIdValue(k), new ConstantValue(v)));
+        this.pattern = Pattern.compile(pattern);
+    }
+
+    SimpleStringSnakMapper(String targetFieldName) {
+        this.targetFieldName = targetFieldName;
     }
 
     @Override
-    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
-        if (!mapping.containsKey(value)) {
-            throw new InvalidWikibaseValueException("No conversion for key: " + value.toString());
+    public Stream<Claim> mapStringValue(StringValue value) throws InvalidWikibaseValueException {
+        if (pattern != null && !pattern.matcher(value.getString()).matches()) {
+            throw new InvalidWikibaseValueException(value + " is not a valid string value. It does not matches the pattern " + pattern);
         }
-        return Stream.of(new Claim(targetFieldName, mapping.get(value)));
+        return Stream.of(new Claim(targetFieldName, value.getString()));
     }
 }
+

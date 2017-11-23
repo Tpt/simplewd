@@ -17,23 +17,13 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
-import org.wikidata.wdtk.datamodel.interfaces.Value;
+import org.wikidata.wdtk.datamodel.interfaces.Snak;
 
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-interface StatementMainItemIdValueMapper extends StatementMainValueMapper {
-
-    @Override
-    default Stream<Claim> mapMainValue(Value value) throws InvalidWikibaseValueException {
-        if (!(value instanceof ItemIdValue)) {
-            throw new InvalidWikibaseValueException(value + " should be a ItemIdValue");
-        }
-        return mapMainItemIdValue((ItemIdValue) value);
-    }
-
-    Stream<Claim> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException;
+interface SnakMapper {
+    Stream<Claim> mapSnak(Snak snak) throws InvalidWikibaseValueException;
 }

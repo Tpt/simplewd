@@ -18,6 +18,7 @@ package org.wikidata.simplewd.http.html;
 
 import j2html.tags.ContainerTag;
 import j2html.tags.DomContent;
+import j2html.tags.UnescapedText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.CommonsAPI;
@@ -125,6 +126,8 @@ public class EntityRenderer extends HTMLRenderer {
             return render((CommonsFileValue) value);
         } else if (value instanceof CalendarValue) {
             return render((CalendarValue) value);
+        } else if (value instanceof CompoundValue) {
+            return render((CompoundValue) value);
         } else if (value instanceof ConstantValue) {
             return render((ConstantValue) value);
         } else if (value instanceof GeoValue) {
@@ -150,6 +153,12 @@ public class EntityRenderer extends HTMLRenderer {
         } catch (UnsupportedEncodingException e) {
             return text(value.toString());
         }
+    }
+
+    private DomContent render(CompoundValue value) {
+        return join(value.getPropertyValues().entrySet().stream().map(entry ->
+                join(render(new ConstantValue(entry.getKey())), ": ", render(entry.getValue()))
+        ).toArray(UnescapedText[]::new));
     }
 
     private DomContent render(CalendarValue value) {

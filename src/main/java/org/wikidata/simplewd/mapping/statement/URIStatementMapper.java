@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 /**
  * @author Thomas Pellissier Tanon
  */
-class URIStatementMapper implements StatementMainStringValueMapper {
+class URIStatementMapper implements StringSnakMapper {
 
     private String targetFieldName;
 
@@ -35,7 +35,7 @@ class URIStatementMapper implements StatementMainStringValueMapper {
     }
 
     @Override
-    public Stream<Claim> mapMainStringValue(StringValue value) throws InvalidWikibaseValueException {
+    public Stream<Claim> mapStringValue(StringValue value) throws InvalidWikibaseValueException {
         try {
             URI parsedURL = new URI(value.getString()).normalize();
             if ((parsedURL.getScheme().equals("http") || parsedURL.getScheme().equals("https")) && parsedURL.getPath().isEmpty()) {

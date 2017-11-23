@@ -17,24 +17,25 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.value.EntityValue;
-import org.wikidata.wdtk.datamodel.interfaces.ItemIdValue;
+import org.wikidata.simplewd.model.value.CommonsFileValue;
+import org.wikidata.wdtk.datamodel.interfaces.StringValue;
 
 import java.util.stream.Stream;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-class ItemIdStatementMapper implements StatementMainItemIdValueMapper {
+class CommonsFileSnakMapper implements StringSnakMapper {
 
     private String targetFieldName;
 
-    ItemIdStatementMapper(String targetFieldName) {
+    CommonsFileSnakMapper(String targetFieldName) {
         this.targetFieldName = targetFieldName;
     }
 
     @Override
-    public Stream<Claim> mapMainItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
-        return Stream.of(new Claim(targetFieldName, new EntityValue(value.getIri())));
+    public Stream<Claim> mapStringValue(StringValue value) throws InvalidWikibaseValueException {
+        return Stream.of(new Claim(targetFieldName, new CommonsFileValue(value.getString())));
     }
 }
+

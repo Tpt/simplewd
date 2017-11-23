@@ -25,6 +25,7 @@ import org.wikidata.simplewd.model.Namespaces;
 import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
+import org.wikidata.wdtk.wikibaseapi.ApiConnection;
 import org.wikidata.wdtk.wikibaseapi.WikibaseDataFetcher;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 import org.wikidata.wdtk.wikibaseapi.apierrors.NoSuchEntityErrorException;
@@ -36,7 +37,14 @@ import java.util.regex.Pattern;
 
 public class WikidataAPI implements EntityLookup {
     private static final Pattern ITEM_URI_PATTERN = Pattern.compile("^wd:Q\\d+$");
-    private static final WikibaseDataFetcher DATA_FETCHER = WikibaseDataFetcher.getWikidataDataFetcher();
+    private static final WikibaseDataFetcher DATA_FETCHER = new WikibaseDataFetcher(
+            new ApiConnection("https://www.wikidata.org/w/api.php"),
+            "http://www.wikidata.org/entity/"
+    );
+
+    public static final WikibaseDataFetcher getDataFetcher() {
+        return DATA_FETCHER;
+    }
 
     private ItemMapper itemMapper;
     private Cache<String, Entity> entityCache = CacheBuilder.newBuilder()
