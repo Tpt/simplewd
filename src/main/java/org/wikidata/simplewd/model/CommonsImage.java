@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Thomas Pellissier Tanon
- * TODO: use Entity for that
+ * TODO: use EntityValue for that
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommonsImage {

@@ -29,10 +29,10 @@ import org.wikidata.simplewd.http.html.SwaggerRenderer;
 import org.wikidata.simplewd.jsonld.JsonLdBuilder;
 import org.wikidata.simplewd.jsonld.JsonLdEntity;
 import org.wikidata.simplewd.jsonld.JsonLdRoot;
-import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.EntityLookup;
 import org.wikidata.simplewd.model.LocaleFilter;
 import org.wikidata.simplewd.model.Namespaces;
+import org.wikidata.simplewd.model.value.EntityValue;
 
 import java.io.IOException;
 
@@ -141,7 +141,7 @@ public class Main {
         return entityRenderer.render(getResource(id), localeFilter);
     }
 
-    private Entity getResource(String id) {
+    private EntityValue getResource(String id) {
         LOGGER.info("Retrieving: " + id);
         try {
             return entityLookup.getEntityForIRI(id).orElseThrow(() -> new HaltException(404, Namespaces.expand(id) + " not found"));

@@ -22,11 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.CommonsAPI;
 import org.wikidata.simplewd.api.KartographerAPI;
-import org.wikidata.simplewd.model.*;
-import org.wikidata.simplewd.model.value.CommonsFileValue;
-import org.wikidata.simplewd.model.value.EntityValue;
-import org.wikidata.simplewd.model.value.GeoValue;
-import org.wikidata.simplewd.model.value.LocaleStringValue;
+import org.wikidata.simplewd.model.Claim;
+import org.wikidata.simplewd.model.EntityLookup;
+import org.wikidata.simplewd.model.LocaleFilter;
+import org.wikidata.simplewd.model.Namespaces;
+import org.wikidata.simplewd.model.value.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -41,6 +41,7 @@ public class JsonLdBuilder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdBuilder.class);
 	private static final Set<String> FUNCTIONAL_PROPERTIES = Sets.newHashSet(
 			"birthDate", "birthPlace",
+			"character",
 			"deathDate", "deathPlace", "description",
 			"flightNumber",
 			"gender", "geo",
@@ -60,19 +61,19 @@ public class JsonLdBuilder {
 		this.commonsAPI = commonsAPI;
 	}
 
-    public JsonLdRoot<JsonLdEntity> buildEntity(Entity entity, LocaleFilter localeFilter) {
-        JsonLdContext context = new JsonLdContext();
+	public JsonLdRoot<JsonLdEntity> buildEntity(EntityValue entity, LocaleFilter localeFilter) {
+		JsonLdContext context = new JsonLdContext();
         return new JsonLdRoot<>(context, mapEntity(entity, true, localeFilter, context));
     }
 
-    private JsonLdEntity mapEntity(Entity entity, boolean withChildren, LocaleFilter localeFilter, JsonLdContext context) {
-        Map<String, Object> propertyValues = new HashMap<>();
+	private JsonLdEntity mapEntity(EntityValue entity, boolean withChildren, LocaleFilter localeFilter, JsonLdContext context) {
+		Map<String, Object> propertyValues = new HashMap<>();
 
 		if (withChildren) {
 			//We preload entities
 			try {
 				entityLookup.getEntitiesForIRI(entity.getClaims().map(Claim::getValue).flatMap(value ->
-						(value instanceof EntityValue) ? Stream.of(value.toString()) : Stream.empty()
+						(value instanceof EntityIdValue) ? Stream.of(value.toString()) : Stream.empty()
 				).toArray(String[]::new));
 			} catch (Exception e) {
 				//We ignore the errors
@@ -120,11 +121,13 @@ public class JsonLdBuilder {
                 }
             } else {
 				Stream<Object> values = entity.getValues(property).flatMap(value -> {
-					if (withChildren && value instanceof EntityValue) {
+					if (value instanceof EntityValue) {
+						return Stream.of(mapEntity((EntityValue) value, withChildren, localeFilter, context));
+					} else if (withChildren && value instanceof EntityIdValue) {
 						try {
 							return Stream.of(entityLookup.getEntityForIRI(value.toString())
-                                    .map(e -> (Object) mapEntity(e, false, localeFilter, context))
-                                    .orElse(value));
+									.map(e -> (Object) mapEntity(e, false, localeFilter, context))
+									.orElse(value));
 						} catch (Exception e) {
 							LOGGER.info(e.getMessage(), e);
 						}
@@ -160,7 +163,7 @@ public class JsonLdBuilder {
 		return new JsonLdEntity(entity.getIRI(), entity.getTypes().collect(Collectors.toList()), propertyValues);
 	}
 
-	private Optional<Object> buildGeoValueFromKartographer(Entity entity) {
+	private Optional<Object> buildGeoValueFromKartographer(EntityValue entity) {
 		try {
 			//We only do geo shape lookup for Places in order to avoid unneeded requests
 			if (entity.getTypes().anyMatch(type -> type.equals("Place"))) {

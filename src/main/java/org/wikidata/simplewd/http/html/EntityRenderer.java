@@ -48,16 +48,16 @@ public class EntityRenderer extends HTMLRenderer {
         this.commonsAPI = commonsAPI;
     }
 
-    public String render(Entity entity, LocaleFilter localeFilter) {
+    public String render(EntityValue entity, LocaleFilter localeFilter) {
         this.localeFilter = localeFilter;
         return render(entity);
     }
 
-    private String render(Entity entity) {
+    private String render(EntityValue entity) {
         //We preload entities
         try {
             entityLookup.getEntitiesForIRI(entity.getClaims().map(Claim::getValue).flatMap(value ->
-                    (value instanceof EntityValue) ? Stream.of(value.toString()) : Stream.empty()
+                    (value instanceof EntityIdValue) ? Stream.of(value.toString()) : Stream.empty()
             ).toArray(String[]::new));
         } catch (Exception e) {
             //We ignore the errors
@@ -102,11 +102,11 @@ public class EntityRenderer extends HTMLRenderer {
         List<DomContent> tableRows = new ArrayList<>();
         data.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> {
             tableRows.add(tr(
-                    th(render(entry.getKey())).attr("scope", "row").attr("rowspan", entry.getValue().size()),
-                    td(render(entry.getValue().get(0)))
+                    th(renderValue(entry.getKey())).attr("scope", "row").attr("rowspan", entry.getValue().size()),
+                    td(renderValue(entry.getValue().get(0)))
             ));
             for (int i = 1; i < entry.getValue().size(); i++) {
-                tableRows.add(tr(td(render(entry.getValue().get(i)))));
+                tableRows.add(tr(td(renderValue(entry.getValue().get(i)))));
             }
         });
 
@@ -121,32 +121,32 @@ public class EntityRenderer extends HTMLRenderer {
         return super.render("SimpleWD - " + title, "", div(card, table));
     }
 
-    private DomContent render(Value value) {
+    private DomContent renderValue(Value value) {
         if (value instanceof CommonsFileValue) {
-            return render((CommonsFileValue) value);
+            return renderValue((CommonsFileValue) value);
         } else if (value instanceof CalendarValue) {
-            return render((CalendarValue) value);
-        } else if (value instanceof CompoundValue) {
-            return render((CompoundValue) value);
+            return renderValue((CalendarValue) value);
         } else if (value instanceof ConstantValue) {
-            return render((ConstantValue) value);
+            return renderValue((ConstantValue) value);
         } else if (value instanceof GeoValue) {
-            return render((GeoValue) value);
+            return renderValue((GeoValue) value);
         } else if (value instanceof LocaleStringValue) {
-            return render((LocaleStringValue) value);
+            return renderValue((LocaleStringValue) value);
         } else if (value instanceof EntityValue) {
-            return render((EntityValue) value);
+            return renderValue((EntityValue) value);
+        } else if (value instanceof EntityIdValue) {
+            return renderValue((EntityIdValue) value);
         } else if (value instanceof StringValue) {
-            return render((StringValue) value);
+            return renderValue((StringValue) value);
         } else if (value instanceof URIValue) {
-            return render((URIValue) value);
+            return renderValue((URIValue) value);
         } else {
             LOGGER.info("Not supported value: " + value.toString());
             return text(value.toString());
         }
     }
 
-    private DomContent render(CommonsFileValue value) {
+    private DomContent renderValue(CommonsFileValue value) {
         try {
             String URL = "https://commons.wikimedia.org/wiki/File:" + URLEncoder.encode(value.toString().replace(" ", "_"), "UTF-8");
             return a(value.toString()).withHref(URL);
@@ -155,25 +155,19 @@ public class EntityRenderer extends HTMLRenderer {
         }
     }
 
-    private DomContent render(CompoundValue value) {
-        return join(value.getPropertyValues().entrySet().stream().map(entry ->
-                join(render(new ConstantValue(entry.getKey())), ": ", render(entry.getValue()))
-        ).toArray(UnescapedText[]::new));
-    }
-
-    private DomContent render(CalendarValue value) {
+    private DomContent renderValue(CalendarValue value) {
         return time(value.toString()).attr("datetime", value.toString()); //TODO: formatting
     }
 
-    private DomContent render(ConstantValue value) {
+    private DomContent renderValue(ConstantValue value) {
         return a(value.toString()).withHref(Namespaces.expand(value.toString()));
     }
 
-    private DomContent render(GeoValue value) {
+    private DomContent renderValue(GeoValue value) {
         return text(value.toString()); //TODO
     }
 
-    private DomContent render(LocaleStringValue value) {
+    private DomContent renderValue(LocaleStringValue value) {
         return span(join(
                 value.toString(),
                 sup(join("(", value.getLocale().getDisplayName(localeFilter.getBestLocale()), ")"))
@@ -184,7 +178,13 @@ public class EntityRenderer extends HTMLRenderer {
         return span(value.toString()).attr("lang", value.getLanguageCode());
     }
 
-    private DomContent render(EntityValue value) {
+    private DomContent renderValue(EntityValue value) {
+        return join(value.getClaims().map(claim ->
+                join(renderValue(new ConstantValue(claim.getProperty())), ": ", renderValue(claim.getValue()))
+        ).toArray(UnescapedText[]::new));
+    }
+
+    private DomContent renderValue(EntityIdValue value) {
         DomContent basicRendering = a(value.toString()).withHref(BASE_URL + value.toString());
         try {
             return entityLookup.getEntityForIRI(value.toString())
@@ -199,11 +199,11 @@ public class EntityRenderer extends HTMLRenderer {
         return basicRendering;
     }
 
-    private DomContent render(StringValue value) {
+    private DomContent renderValue(StringValue value) {
         return text(value.toString());
     }
 
-    private DomContent render(URIValue value) {
+    private DomContent renderValue(URIValue value) {
         return a(value.toString()).withHref(value.toString());
     }
 }

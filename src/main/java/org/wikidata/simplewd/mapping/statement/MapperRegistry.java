@@ -160,6 +160,7 @@ public class MapperRegistry {
 
     private void addRoleMapping(String propertyId, String targetRelation) {
         FullStatementMapper fullStatementMapper = new FullStatementMapper(targetRelation, new SimpleItemIdSnakMapper(targetRelation));
+        fullStatementMapper.addQualifierMapper(Datamodel.makeWikidataPropertyIdValue("P453"), new SimpleItemIdSnakMapper("character")); //TODO: not in schema.org schema (but characterName is)
         fullStatementMapper.addQualifierMapper(Datamodel.makeWikidataPropertyIdValue("P580"), new TimeSnakMapper("startDate"));
         fullStatementMapper.addQualifierMapper(Datamodel.makeWikidataPropertyIdValue("P582"), new TimeSnakMapper("endDate"));
         mapperForProperty.put(Datamodel.makeWikidataPropertyIdValue(propertyId), fullStatementMapper);

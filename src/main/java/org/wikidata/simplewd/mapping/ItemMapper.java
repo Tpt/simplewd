@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.mapping.statement.InvalidWikibaseValueException;
 import org.wikidata.simplewd.mapping.statement.MapperRegistry;
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.Entity;
+import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.simplewd.model.value.LocaleStringValue;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
@@ -43,15 +43,15 @@ public class ItemMapper {
         this.mapperRegistry = new MapperRegistry();
     }
 
-    public Entity map(ItemDocument document) {
-        Entity entity = new Entity(document.getEntityId().getIri());
+    public EntityValue map(ItemDocument document) {
+        EntityValue entity = new EntityValue(document.getEntityId().getIri());
         addTermsToResource(document, entity);
         addSiteLinksToResource(document, entity);
         addStatementsToResource(document, entity);
         return entity;
     }
 
-    private void addTermsToResource(TermedDocument termedDocument, Entity entity) {
+    private void addTermsToResource(TermedDocument termedDocument, EntityValue entity) {
         termedDocument.getLabels().values().forEach(label -> {
             LocaleStringValue value = convert(label);
             entity.addClaim("name", value);
@@ -67,7 +67,7 @@ public class ItemMapper {
         );
     }
 
-    private void addSiteLinksToResource(ItemDocument itemDocument, Entity entity) {
+    private void addSiteLinksToResource(ItemDocument itemDocument, EntityValue entity) {
         itemDocument.getSiteLinks().values().stream()
                 .filter(siteLink -> sites.getGroup(siteLink.getSiteKey()).equals("wikipedia"))
                 .forEach(siteLink ->
@@ -75,7 +75,7 @@ public class ItemMapper {
                 );
     }
 
-    private void addStatementsToResource(StatementDocument statementDocument, Entity entity) {
+    private void addStatementsToResource(StatementDocument statementDocument, EntityValue entity) {
         statementDocument.getStatementGroups().forEach(group ->
                 mapperRegistry.getMapperForProperty(group.getProperty()).ifPresent(mapper -> {
                     Stream<Statement> statements = mapper.onlyBestRank()

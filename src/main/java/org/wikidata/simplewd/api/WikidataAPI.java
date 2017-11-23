@@ -19,9 +19,9 @@ package org.wikidata.simplewd.api;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.wikidata.simplewd.mapping.ItemMapper;
-import org.wikidata.simplewd.model.Entity;
 import org.wikidata.simplewd.model.EntityLookup;
 import org.wikidata.simplewd.model.Namespaces;
+import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.wdtk.datamodel.interfaces.EntityDocument;
 import org.wikidata.wdtk.datamodel.interfaces.ItemDocument;
 import org.wikidata.wdtk.dumpfiles.DumpProcessingController;
@@ -47,7 +47,7 @@ public class WikidataAPI implements EntityLookup {
     }
 
     private ItemMapper itemMapper;
-    private Cache<String, Entity> entityCache = CacheBuilder.newBuilder()
+    private Cache<String, EntityValue> entityCache = CacheBuilder.newBuilder()
             .maximumSize(65536) //TODO: configure?
             .expireAfterWrite(7, TimeUnit.DAYS)
             .build();
@@ -57,8 +57,8 @@ public class WikidataAPI implements EntityLookup {
     }
 
     @Override
-    public Map<String, Entity> getEntitiesForIRI(String... ids) throws IOException {
-        Map<String, Entity> entities = new HashMap<>();
+    public Map<String, EntityValue> getEntitiesForIRI(String... ids) throws IOException {
+        Map<String, EntityValue> entities = new HashMap<>();
         List<String> idsToRetrieve = new ArrayList<>();
         for (String inputId : ids) {
             String id = Namespaces.reduce(inputId);
@@ -67,7 +67,7 @@ public class WikidataAPI implements EntityLookup {
             }
 
             //TODO: JDK 9+: cleanup with ifPresentOrElse
-            Optional<Entity> entityOptional = Optional.ofNullable(entityCache.getIfPresent(id));
+            Optional<EntityValue> entityOptional = Optional.ofNullable(entityCache.getIfPresent(id));
             if (entityOptional.isPresent()) {
                 entityOptional.ifPresent(entity -> entities.put(id, entity));
             } else {
@@ -83,13 +83,13 @@ public class WikidataAPI implements EntityLookup {
         return entities;
     }
 
-    private Map<String, Entity> retrieveEntitiesForIRI(List<String> ids) throws IOException {
+    private Map<String, EntityValue> retrieveEntitiesForIRI(List<String> ids) throws IOException {
         try {
             Map<String, EntityDocument> documents = DATA_FETCHER.getEntityDocuments(
                     ids.stream().map(id -> id.replace("wd:", "")).toArray(String[]::new)
             );
 
-            Map<String, Entity> entities = new HashMap<>();
+            Map<String, EntityValue> entities = new HashMap<>();
             for (Map.Entry<String, EntityDocument> entry : documents.entrySet()) {
                 EntityDocument document = entry.getValue();
                 if (document instanceof ItemDocument) {
@@ -102,7 +102,7 @@ public class WikidataAPI implements EntityLookup {
         } catch (NoSuchEntityErrorException e) {
             //An entity does not exists, we get entities one by one if there are more than 1
             if (ids.size() > 1) {
-                Map<String, Entity> result = new HashMap<>();
+                Map<String, EntityValue> result = new HashMap<>();
                 for (String id : ids) {
                     retrieveEntitiesForIRI(Collections.singletonList(id)).forEach(result::put);
                 }

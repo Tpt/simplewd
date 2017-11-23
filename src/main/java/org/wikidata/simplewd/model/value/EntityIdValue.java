@@ -16,45 +16,25 @@
 
 package org.wikidata.simplewd.model.value;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.wikidata.simplewd.model.Claim;
 import org.wikidata.simplewd.model.Namespaces;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Thomas Pellissier Tanon
  */
-public class CompoundValue implements Value {
+public class EntityIdValue implements Value {
 
     private String IRI;
 
-    private List<Claim> claims = new ArrayList<>();
-
-    public CompoundValue(String IRI) {
+    public EntityIdValue(String IRI) {
         this.IRI = Namespaces.reduce(IRI);
-    }
-
-    public void addClaim(Claim claim) {
-        claims.add(claim);
-    }
-
-    @JsonAnyGetter
-    public Map<String, Value> getPropertyValues() {
-        Map<String, Value> propertyValues = new HashMap<>();
-        claims.forEach(claim -> propertyValues.put(claim.getProperty(), claim.getValue()));
-        return propertyValues;
     }
 
     @Override
     @JsonIgnore
     public String getType() {
-        return "Role";
+        return "@id";
     }
 
     @Override
@@ -70,7 +50,7 @@ public class CompoundValue implements Value {
 
     @Override
     public boolean equals(Object value) {
-        return (value instanceof CompoundValue) && ((CompoundValue) value).IRI.equals(value);
+        return (value instanceof EntityIdValue) && ((EntityIdValue) value).IRI.equals(value);
     }
 
     @Override

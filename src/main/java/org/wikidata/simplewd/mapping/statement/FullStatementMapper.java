@@ -17,7 +17,7 @@
 package org.wikidata.simplewd.mapping.statement;
 
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.value.CompoundValue;
+import org.wikidata.simplewd.model.value.EntityValue;
 import org.wikidata.wdtk.datamodel.interfaces.PropertyIdValue;
 import org.wikidata.wdtk.datamodel.interfaces.Statement;
 
@@ -49,8 +49,9 @@ class FullStatementMapper implements StatementMapper {
     @Override
     public Stream<Claim> mapStatement(Statement statement) throws InvalidWikibaseValueException {
         return mainSnakMapper.mapSnak(statement.getClaim().getMainSnak()).map(mainClaim -> {
-            CompoundValue compoundValue = new CompoundValue("wds:" + statement.getStatementId());
+            EntityValue compoundValue = new EntityValue("wds:" + statement.getStatementId());
             compoundValue.addClaim(mainClaim);
+            compoundValue.addType("Role");
 
             statement.getClaim().getAllQualifiers().forEachRemaining(qualifier -> {
                 Optional.ofNullable(qualifiersMappers.get(qualifier.getPropertyId())).ifPresent(mapper -> {

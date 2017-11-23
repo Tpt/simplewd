@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.WikidataAPI;
 import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.value.EntityValue;
+import org.wikidata.simplewd.model.value.ConstantValue;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
 import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
@@ -181,7 +181,7 @@ public class TypeMapper implements ItemIdSnakMapper {
     @Override
     public Stream<Claim> mapItemIdValue(ItemIdValue value) throws InvalidWikibaseValueException {
         return mapClass(value).stream()
-                .map(type -> new Claim("@type", new EntityValue(type)));
+                .map(type -> new Claim("@type", new ConstantValue(type)));
     }
 
     private Set<String> mapClass(ItemIdValue itemId) {

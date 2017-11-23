@@ -16,29 +16,74 @@
 
 package org.wikidata.simplewd.model.value;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.wikidata.simplewd.model.Claim;
 import org.wikidata.simplewd.model.Namespaces;
 
-/**
- * @author Thomas Pellissier Tanon
- */
-public class EntityValue implements Value {
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+
+public class EntityValue implements Value {
     private String IRI;
+    private Set<String> types = new HashSet<>();
+    private Set<Claim> claims = new HashSet<>();
 
     public EntityValue(String IRI) {
         this.IRI = Namespaces.reduce(IRI);
     }
 
-    @Override
-    @JsonIgnore
+    public String getIRI() {
+        return IRI;
+    }
+
+    public Stream<String> getTypes() {
+        return types.stream();
+    }
+
+    public void addType(String typeIRI) {
+        types.add(Namespaces.reduce(typeIRI));
+    }
+
+    public Stream<Claim> getClaims() {
+        return claims.stream();
+    }
+
+    public Set<String> getProperties() {
+        return claims.stream().map(Claim::getProperty).collect(Collectors.toSet());
+    }
+
+    public Optional<Value> getValue(String property) {
+        return claims.stream().filter(claim -> claim.getProperty().equals(property)).findAny().map(Claim::getValue);
+    }
+
+    public Stream<Value> getValues(String property) {
+        return claims.stream().filter(claim -> claim.getProperty().equals(property)).map(Claim::getValue);
+    }
+
+    public void addClaim(Claim claim) {
+        if (claim.getProperty().equals("@type")) {
+            if (claim.getValue() instanceof ConstantValue) {
+                types.add(claim.getValue().toString());
+            } else {
+                throw new IllegalArgumentException("The range of rdf:type is ConstantValue");
+            }
+        } else {
+            claims.add(claim);
+        }
+    }
+
+    public void addClaim(String property, Value value) {
+        addClaim(new Claim(property, value));
+    }
+
     public String getType() {
         return "@id";
     }
 
     @Override
-    @JsonProperty("@id")
     public String toString() {
         return IRI;
     }
