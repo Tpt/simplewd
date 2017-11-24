@@ -29,7 +29,7 @@ public class GeoShapeValue extends GeoValue {
     }
 
     @Override
-    @JsonProperty("@type")
+    @JsonProperty("type")
     public String getType() {
         return "GeoShape";
     }

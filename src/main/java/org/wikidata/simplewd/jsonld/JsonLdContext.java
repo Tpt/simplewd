@@ -36,6 +36,20 @@ public class JsonLdContext {
     static {
         BASIC_CONTEXT.put("@vocab", Namespaces.DEFAULT_NAMESPACE);
         BASIC_CONTEXT.putAll(Namespaces.NAMESPACES);
+
+        //Aliases without @
+        BASIC_CONTEXT.put("id", "@id");
+        BASIC_CONTEXT.put("language", "@language");
+        BASIC_CONTEXT.put("type", "@type");
+        BASIC_CONTEXT.put("value", "@value");
+
+        //Calendar values precisions
+        BASIC_CONTEXT.put("precision", "@type");
+        BASIC_CONTEXT.put("second", "xsd:dateTime");
+        BASIC_CONTEXT.put("day", "xsd:date");
+        BASIC_CONTEXT.put("month", "xsd:gYearMonth");
+        BASIC_CONTEXT.put("year", "xsd:gYear");
+
         BASIC_CONTEXT.put("contentUrl", Collections.singletonMap("@type", "xsd:anyURI"));
     }
 

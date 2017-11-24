@@ -30,13 +30,13 @@ public class CommonsFileValue implements Value {
     }
 
     @Override
-    @JsonProperty("@type")
+    @JsonProperty("type")
     public String getType() {
         return "xsd:string";
     }
 
     @Override
-    @JsonProperty("@value")
+    @JsonProperty("value")
     public String toString() {
         return fileTitle;
     }

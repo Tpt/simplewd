@@ -19,8 +19,10 @@ package org.wikidata.simplewd.model.value;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -28,7 +30,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 public class CalendarValue implements Value {
 
     private static DatatypeFactory DATATYPE_FACTORY;
-
     static {
         try {
             DATATYPE_FACTORY = DatatypeFactory.newInstance();
@@ -48,13 +49,24 @@ public class CalendarValue implements Value {
     }
 
     @Override
-    @JsonProperty("@type")
+    @JsonProperty("precision")
     public String getType() {
-        return "xsd:" + value.getXMLSchemaType().getLocalPart();
+        QName datatype = value.getXMLSchemaType();
+        if (datatype.equals(DatatypeConstants.DATETIME)) {
+            return "second";
+        } else if (datatype.equals(DatatypeConstants.DATE)) {
+            return "day";
+        } else if (datatype.equals(DatatypeConstants.GYEARMONTH)) {
+            return "month";
+        } else if (datatype.equals(DatatypeConstants.GYEAR)) {
+            return "year";
+        } else {
+            return "xsd:" + datatype.getLocalPart();
+        }
     }
 
     @Override
-    @JsonProperty("@value")
+    @JsonProperty("value")
     public String toString() {
         return value.toXMLFormat();
     }

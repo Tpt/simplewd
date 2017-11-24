@@ -37,13 +37,13 @@ public class URIValue implements Value {
     }
 
     @Override
-    @JsonProperty("@type")
+    @JsonProperty("type")
     public String getType() {
         return "xsd:anyURI";
     }
 
     @Override
-    @JsonProperty("@value")
+    @JsonProperty("value")
     public String toString() {
         return value.toString();
     }

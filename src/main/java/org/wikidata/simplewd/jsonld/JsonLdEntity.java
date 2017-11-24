@@ -41,15 +41,15 @@ public class JsonLdEntity {
 
     @JsonCreator
     public JsonLdEntity(Map<String, Object> content) {
-        this((String) content.get("@id"), (List) content.get("@type"), content);
+        this((String) content.get("id"), (List) content.get("type"), content);
     }
 
-    @JsonProperty("@id")
+    @JsonProperty("id")
     public String getIRI() {
         return IRI;
     }
 
-    @JsonProperty("@type")
+    @JsonProperty("type")
     public List<String> getTypes() {
         return types;
     }

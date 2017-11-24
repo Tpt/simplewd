@@ -40,13 +40,13 @@ public class IntegerValue implements Value {
     }
 
     @Override
-    @JsonProperty("@type")
+    @JsonProperty("type")
     public String getType() {
         return "xsd:integer";
     }
 
     @Override
-    @JsonProperty("@value")
+    @JsonProperty("value")
     public String toString() {
         return value.toString();
     }

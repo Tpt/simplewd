@@ -38,7 +38,7 @@ public class EntityIdValue implements Value {
     }
 
     @Override
-    @JsonProperty("@id")
+    @JsonProperty("id")
     public String toString() {
         return IRI;
     }

@@ -32,13 +32,13 @@ public class GeoCoordinatesValue extends GeoValue {
         this.point = point;
     }
 
-    @JsonProperty("@id")
+    @JsonProperty("id")
     public String getIRI() {
         return "geo:" + getLatitude() + "," + getLongitude();
     }
 
     @Override
-    @JsonProperty("@type")
+    @JsonProperty("type")
     public String getType() {
         return "GeoCoordinates";
     }

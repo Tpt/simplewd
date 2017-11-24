@@ -49,13 +49,13 @@ public class LocaleStringValue implements Value {
         return locale;
     }
 
-    @JsonProperty("@language")
+    @JsonProperty("language")
     public String getLanguageCode() {
         return locale.toLanguageTag();
     }
 
     @Override
-    @JsonProperty("@value")
+    @JsonProperty("value")
     public String toString() {
         return value;
     }

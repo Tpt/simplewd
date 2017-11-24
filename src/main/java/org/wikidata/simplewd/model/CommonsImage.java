@@ -42,7 +42,7 @@ public class CommonsImage {
         this.license = license;
     }
 
-    @JsonProperty("@type")
+    @JsonProperty("type")
     public String[] getTypes() {
         return new String[]{"ImageObject"};
     }
@@ -86,12 +86,12 @@ public class CommonsImage {
             this.name = name;
         }
 
-        @JsonProperty("@id")
+        @JsonProperty("id")
         public String getId() {
             return id;
         }
 
-        @JsonProperty("@type")
+        @JsonProperty("type")
         public String[] getType() {
             return new String[]{"CreativeWork"};
         }
