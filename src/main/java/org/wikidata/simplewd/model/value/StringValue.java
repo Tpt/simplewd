@@ -50,9 +50,4 @@ public class StringValue implements Value {
     public boolean equals(Object value) {
         return (value instanceof StringValue) && ((StringValue) value).value.equals(value);
     }
-
-    @Override
-    public boolean hasPlainSerialization() {
-        return true;
-    }
 }

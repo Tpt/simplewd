@@ -67,9 +67,4 @@ public abstract class GeoValue implements Value {
     public boolean equals(Object value) {
         return (value instanceof GeoValue) && ((GeoValue) value).geometry.equals(value);
     }
-
-    @Override
-    public boolean hasPlainSerialization() {
-        return false;
-    }
 }

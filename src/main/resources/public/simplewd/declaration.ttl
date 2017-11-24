@@ -1,0 +1,139 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix schema: <http://schema.org/> .
+@prefix wdt: <http://www.wikidata.org/prop/direct/> .
+@prefix wd: <http://www.wikidata.org/entity/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix swd: <http://tools.wmflabs.org/simplewd/declaration#> .
+
+swd:
+	rdfs:label "SimpleWD declaration"@en .
+
+
+# some utility shapes
+
+sh:startDate a sh:PropertyShape ;
+    sh:path schema:startDate ;
+    sh:or (
+        [
+            sh:datatype xsd:dateTime
+        ]
+        [
+            sh:datatype xsd:date
+        ]
+        [
+            sh:datatype xsd:gYearMonth
+        ]
+        [
+            sh:datatype xsd:gYear
+        ]
+    ) ;
+    sh:maxCount 1 .
+
+sh:endDate a sh:PropertyShape ;
+    sh:path schema:endDate ;
+    sh:or (
+        [
+            sh:datatype xsd:dateTime
+        ]
+        [
+            sh:datatype xsd:date
+        ]
+        [
+            sh:datatype xsd:gYearMonth
+        ]
+        [
+            sh:datatype xsd:gYear
+        ]
+    ) ;
+    sh:maxCount 1 .
+
+
+# types definition
+
+swd:Thing a sh:NodeShape ;
+    sh:targetClass schema:Thing ;
+    sh:property [
+        sh:path schema:alternateName ;
+        sh:datatype rdf:langString ;
+    ] ;
+    sh:property [
+        sh:path schema:description ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+    ] ;
+    sh:property [
+        sh:path schema:name ;
+        sh:datatype rdf:langString ;
+        sh:uniqueLang true ;
+    ] ;
+    sh:property [
+        sh:path schema:sameAs ;
+        sh:datatype xsd:anyURI ;
+    ] ;
+    sh:property [
+        sh:path schema:url ;
+        sh:datatype xsd:anyURI ;
+        sh:uniqueLang true ;
+        sh:maxCount 1 ;
+    ] .
+
+
+swd:Organization a sh:NodeShape ;
+    sh:targetClass schema:Organization .
+
+
+swd:Person a sh:NodeShape ;
+    sh:targetClass schema:Person ;
+    sh:property [
+        sh:path schema:alumniOf ;
+        sh:node [
+            rdfs:label "AlumniRole" ;
+            sh:property sh:startDate ;
+            sh:property sh:endDate ;
+            sh:property [
+                sh:path schema:alumniOf ;
+                sh:shape swd:Organization ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+            ]
+        ]
+    ] ;
+    sh:property [
+        sh:path schema:birthDate ;
+        sh:or (
+            [
+                sh:datatype xsd:dateTime
+            ]
+            [
+                sh:datatype xsd:date
+            ]
+            [
+                sh:datatype xsd:gYearMonth
+            ]
+            [
+                sh:datatype xsd:gYear
+            ]
+        ) ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:birthPlace ;
+        sh:node swd:Place ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:gender ;
+        sh:node [
+            rdfs:label "Gender" ;
+            sh:in ( schema:Male schema:Female ) ;
+        ] ;
+        sh:maxCount 1 ;
+    ] .
+
+
+swd:Place a sh:NodeShape ;
+    sh:targetClass schema:Place .

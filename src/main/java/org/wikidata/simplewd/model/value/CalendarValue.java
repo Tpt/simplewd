@@ -77,9 +77,4 @@ public class CalendarValue implements Value {
             return toString().compareTo(o.toString());
         }
     }
-
-    @Override
-    public boolean hasPlainSerialization() {
-        return false;
-    }
 }

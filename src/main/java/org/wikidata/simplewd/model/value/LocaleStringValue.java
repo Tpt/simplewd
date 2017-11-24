@@ -69,9 +69,4 @@ public class LocaleStringValue implements Value {
     public boolean equals(Object value) {
         return (value instanceof LocaleStringValue) && ((LocaleStringValue) value).value.equals(value);
     }
-
-    @Override
-    public boolean hasPlainSerialization() {
-        return false;
-    }
 }

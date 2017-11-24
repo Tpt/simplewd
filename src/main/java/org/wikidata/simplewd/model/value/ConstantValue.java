@@ -52,9 +52,4 @@ public class ConstantValue implements Value {
     public boolean equals(Object value) {
         return (value instanceof ConstantValue) && ((ConstantValue) value).IRI.equals(value);
     }
-
-    @Override
-    public boolean hasPlainSerialization() {
-        return true;
-    }
 }

@@ -27,11 +27,13 @@
     <properties>
         <jdkVersion>1.8</jdkVersion>
         <commonsValidatorVersion>1.6</commonsValidatorVersion>
+        <graphqlVersion>6.0</graphqlVersion>
         <guavaVersion>23.2-jre</guavaVersion>
         <j2htmlVersion>1.2.0</j2htmlVersion>
         <javalinVersion>0.5.3</javalinVersion>
         <jtsVersion>1.14.0</jtsVersion>
         <junitVersion>4.12</junitVersion>
+        <rdf4jVersion>2.2.2</rdf4jVersion>
         <slf4jVersion>1.7.25</slf4jVersion>
         <wdtkVersion>0.7.0</wdtkVersion>
     </properties>
@@ -46,6 +48,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guavaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java</artifactId>
+            <version>${graphqlVersion}</version>
         </dependency>
         <dependency>
             <groupId>com.j2html</groupId>
@@ -67,6 +74,11 @@
             <artifactId>junit</artifactId>
             <version>${junitVersion}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-rio-turtle</artifactId>
+            <version>${rdf4jVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

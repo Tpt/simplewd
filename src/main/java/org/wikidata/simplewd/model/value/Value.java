@@ -19,8 +19,6 @@ package org.wikidata.simplewd.model.value;
 public interface Value extends Comparable<Value> {
     String getType();
 
-    boolean hasPlainSerialization();
-
     int hashCode();
 
     boolean equals(Object value);

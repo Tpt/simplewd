@@ -52,9 +52,4 @@ public class EntityIdValue implements Value {
     public boolean equals(Object value) {
         return (value instanceof EntityIdValue) && ((EntityIdValue) value).IRI.equals(value);
     }
-
-    @Override
-    public boolean hasPlainSerialization() {
-        return false;
-    }
 }

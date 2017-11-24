@@ -20,7 +20,10 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.wikidata.simplewd.model.Namespaces;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author Thomas Pellissier Tanon
@@ -49,10 +52,6 @@ public class JsonLdContext {
 
     void addPropertyRange(String property, String range) {
         context.put(property, Collections.singletonMap("@type", range));
-    }
-
-    void addPropertyLocale(String property, Locale locale) {
-        context.put(property, Collections.singletonMap("@language", locale.toLanguageTag()));
     }
 
     void addLanguageContainerToProperty(String property) {

@@ -60,9 +60,4 @@ public class IntegerValue implements Value {
     public boolean equals(Object value) {
         return (value instanceof IntegerValue) && ((IntegerValue) value).value.equals(value);
     }
-
-    @Override
-    public boolean hasPlainSerialization() {
-        return true;
-    }
 }

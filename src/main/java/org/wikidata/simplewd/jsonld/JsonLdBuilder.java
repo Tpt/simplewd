@@ -16,16 +16,12 @@
 
 package org.wikidata.simplewd.jsonld;
 
-import com.google.common.collect.Sets;
 import com.vividsolutions.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.CommonsAPI;
 import org.wikidata.simplewd.api.KartographerAPI;
-import org.wikidata.simplewd.model.Claim;
-import org.wikidata.simplewd.model.EntityLookup;
-import org.wikidata.simplewd.model.LocaleFilter;
-import org.wikidata.simplewd.model.Namespaces;
+import org.wikidata.simplewd.model.*;
 import org.wikidata.simplewd.model.value.*;
 
 import java.io.IOException;
@@ -39,18 +35,8 @@ import java.util.stream.Stream;
 public class JsonLdBuilder {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdBuilder.class);
-	private static final Set<String> FUNCTIONAL_PROPERTIES = Sets.newHashSet(
-			"birthDate", "birthPlace",
-			"character",
-			"deathDate", "deathPlace", "description",
-			"flightNumber",
-			"gender", "geo",
-			"iataCode", "icaoCode", "isicV4", "isrcCode", "iswcCode",
-			"leiCode",
-			"naics", "name",
-			"url"
-	); //TODO: schema
-	private static final Set<String> PROPERTIES_WITH_BY_LANGUAGE_CONTAINER = Sets.newHashSet("alternateName", "description", "name");
+	private static final ShaclSchema SCHEMA = ShaclSchema.getSchema();
+	private static final Optional<Set<String>> LANG_STRING_RANGE = Optional.of(Collections.singleton("rdf:langString"));
 	private static final KartographerAPI KARTOGRAPHER_API = new KartographerAPI();
 
 	private EntityLookup entityLookup;
@@ -61,29 +47,35 @@ public class JsonLdBuilder {
 		this.commonsAPI = commonsAPI;
 	}
 
-	public JsonLdRoot<JsonLdEntity> buildEntity(EntityValue entity, LocaleFilter localeFilter) {
-		JsonLdContext context = new JsonLdContext();
-        return new JsonLdRoot<>(context, mapEntity(entity, true, localeFilter, context));
+    public JsonLdRoot<JsonLdEntity> buildEntity(EntityValue entity, LocaleFilter localeFilter) {
+        return new JsonLdRoot<>(
+                buildContext(localeFilter.isMultilingualAccepted()),
+                mapEntity(entity, true, localeFilter)
+        );
     }
 
-	private JsonLdEntity mapEntity(EntityValue entity, boolean withChildren, LocaleFilter localeFilter, JsonLdContext context) {
-		Map<String, Object> propertyValues = new HashMap<>();
+    private JsonLdEntity mapEntity(EntityValue entity, boolean withChildren, LocaleFilter localeFilter) {
+        return mapEntity(entity, withChildren, localeFilter, SCHEMA.getShapeForClasses(entity.getTypes()));
+    }
 
-		if (withChildren) {
-			//We preload entities
-			try {
-				entityLookup.getEntitiesForIRI(entity.getClaims().map(Claim::getValue).flatMap(value ->
-						(value instanceof EntityIdValue) ? Stream.of(value.toString()) : Stream.empty()
-				).toArray(String[]::new));
-			} catch (Exception e) {
-				//We ignore the errors
-			}
-		}
+    private JsonLdEntity mapEntity(EntityValue entity, boolean withChildren, LocaleFilter localeFilter, ShaclSchema.NodeShape nodeShape) {
+        if (withChildren) {
+            //We preload entities
+            try {
+                entityLookup.getEntitiesForIRI(entity.getClaims().map(Claim::getValue).flatMap(value ->
+                        (value instanceof EntityValue) ? Stream.of(value.toString()) : Stream.empty()
+                ).toArray(String[]::new));
+            } catch (Exception e) {
+                //We ignore the errors
+            }
+        }
 
-		entity.getProperties().stream().sorted().forEach(property -> {
-			if (PROPERTIES_WITH_BY_LANGUAGE_CONTAINER.contains(property)) {
+        Map<String, Object> propertyValues = new HashMap<>();
+        nodeShape.getProperties().forEach(propertyShape -> {
+            String property = propertyShape.getProperty();
+            if (propertyShape.getDatatypes().equals(LANG_STRING_RANGE)) {
                 if (localeFilter.isMultilingualAccepted()) {
-                    if (FUNCTIONAL_PROPERTIES.contains(property)) {
+                    if (propertyShape.isUniqueLang()) {
                         Map<String, String> valuesByLanguage = new HashMap<>();
                         entity.getValues(property).forEach(value -> {
                             if (value instanceof LocaleStringValue) {
@@ -104,67 +96,69 @@ public class JsonLdBuilder {
                         });
                         propertyValues.put(property, valuesByLanguage);
                     }
-                    context.addLanguageContainerToProperty(property);
                 } else {
-                    if (FUNCTIONAL_PROPERTIES.contains(property)) {
-                        localeFilter.getBestValues(entity.getValues(property)).findAny().ifPresent(value -> {
-                            propertyValues.put(property, value.toString());
-                            context.addPropertyLocale(property, value.getLocale());
-                        });
+                    if (propertyShape.isUniqueLang()) {
+                        localeFilter.getBestValues(entity.getValues(property)).findAny()
+                                .ifPresent(value -> propertyValues.put(property, value));
                     } else {
                         propertyValues.put(property,
                                 localeFilter.getBestValues(entity.getValues(property))
-                                        .peek(value -> context.addPropertyLocale(property, value.getLocale()))
-                                        .map(Object::toString)
-                                        .toArray(String[]::new));
+                                        .toArray());
                     }
                 }
             } else {
-				Stream<Object> values = entity.getValues(property).flatMap(value -> {
-					if (value instanceof EntityValue) {
-						return Stream.of(mapEntity((EntityValue) value, withChildren, localeFilter, context));
-					} else if (withChildren && value instanceof EntityIdValue) {
-						try {
-							return Stream.of(entityLookup.getEntityForIRI(value.toString())
-									.map(e -> (Object) mapEntity(e, false, localeFilter, context))
-									.orElse(value));
-						} catch (Exception e) {
-							LOGGER.info(e.getMessage(), e);
-						}
-					} else if (value instanceof CommonsFileValue) {
-						if (withChildren) {
-							try {
-								return Stream.of(commonsAPI.getImage(value.toString()));
-							} catch (Exception e) {
-								LOGGER.info(e.getMessage(), e);
-							}
-						}
-					} else if (value.hasPlainSerialization()) {
-						context.addPropertyRange(property, value.getType());
-						return Stream.of(value.toString());
-					} else {
-						return Stream.of(value);
-					}
-					return Stream.empty();
-				});
-				if (FUNCTIONAL_PROPERTIES.contains(property)) {
-					values.findAny().ifPresent(value -> propertyValues.put(property, value));
-				} else {
-					propertyValues.put(property, values.collect(Collectors.toList()));
-				}
-			}
-		});
+                Stream<Object> values = entity.getValues(property).flatMap(value -> {
+                    if (value instanceof EntityValue) {
+                        return Stream.of(propertyShape.getNodeShape()
+                                .map(rangeShape -> mapEntity((EntityValue) value, withChildren, localeFilter, rangeShape))
+                                .orElseGet(() -> mapEntity((EntityValue) value, withChildren, localeFilter))
+                        );
+                    } else if (withChildren && value instanceof EntityIdValue) {
+                        try {
+                            return Stream.of(entityLookup.getEntityForIRI(value.toString())
+                                    .map(e -> (Object) propertyShape.getNodeShape()
+                                            .map(rangeShape -> mapEntity(e, false, localeFilter, rangeShape))
+                                            .orElseGet(() -> mapEntity(e, false, localeFilter))
+                                    ).orElse(value));
+                        } catch (Exception e) {
+                            LOGGER.info(e.getMessage(), e);
+                        }
+                    } else if (value instanceof CommonsFileValue) {
+                        if (withChildren) {
+                            try {
+                                return Stream.of(commonsAPI.getImage(value.toString()));
+                            } catch (Exception e) {
+                                LOGGER.info(e.getMessage(), e);
+                            }
+                        }
+                    } else {
+                        boolean plainSerialization = propertyShape.getDatatypes().map(dts -> dts.size() == 1).orElse(false);
+                        if (plainSerialization) {
+                            return Stream.of(value.toString());
+                        } else {
+                            return Stream.of(value);
+                        }
+                    }
+                    return Stream.empty();
+                });
+                if (propertyShape.getMaxCount() <= 1) {
+                    values.findAny().ifPresent(value -> propertyValues.put(property, value));
+                } else {
+                    propertyValues.put(property, values.collect(Collectors.toList()));
+                }
+            }
+        });
 
-		if (withChildren) {
-			buildGeoValueFromKartographer(entity)
-					.ifPresent(geoValue -> propertyValues.put("geo", geoValue));
-		}
+        if (withChildren) {
+            buildGeoValueFromKartographer(entity)
+                    .ifPresent(geoValue -> propertyValues.put("geo", geoValue));
+        }
 
-		return new JsonLdEntity(entity.getIRI(), entity.getTypes().collect(Collectors.toList()), propertyValues);
-	}
+        return new JsonLdEntity(entity.getIRI(), entity.getTypes().collect(Collectors.toList()), propertyValues);
+    }
 
-	private Optional<Object> buildGeoValueFromKartographer(EntityValue entity) {
-		try {
+    private Optional<Object> buildGeoValueFromKartographer(EntityValue entity) {
+        try {
 			//We only do geo shape lookup for Places in order to avoid unneeded requests
 			if (entity.getTypes().anyMatch(type -> type.equals("Place"))) {
 				Geometry shape = KARTOGRAPHER_API.getShapeForItemId(Namespaces.expand(entity.getIRI()));
@@ -176,5 +170,27 @@ public class JsonLdBuilder {
 			LOGGER.error(e.getMessage(), e);
 		}
 		return Optional.empty();
+	}
+
+	private JsonLdContext buildContext(boolean multilingual) {
+		JsonLdContext context = new JsonLdContext();
+
+		SCHEMA.getNodeShapes().forEach(nodeShape -> nodeShape.getProperties().forEach(propertyShape -> {
+            propertyShape.getNodeShape().ifPresent(rangeShape ->
+                    context.addPropertyRange(propertyShape.getProperty(), "@id")
+            );
+            propertyShape.getDatatypes().ifPresent(datatypes -> {
+				if (datatypes.size() == 1) {
+					if (datatypes.equals(Collections.singleton("rdf:langString"))) {
+						if (multilingual) {
+							context.addLanguageContainerToProperty(propertyShape.getProperty());
+						}
+					} else {
+						context.addPropertyRange(propertyShape.getProperty(), datatypes.iterator().next());
+					}
+				}
+			});
+		}));
+		return context;
 	}
 }

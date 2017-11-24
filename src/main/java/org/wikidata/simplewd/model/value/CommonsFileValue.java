@@ -50,9 +50,4 @@ public class CommonsFileValue implements Value {
     public boolean equals(Object value) {
         return (value instanceof CommonsFileValue) && ((CommonsFileValue) value).fileTitle.equals(value);
     }
-
-    @Override
-    public boolean hasPlainSerialization() {
-        return true;
-    }
 }

@@ -57,9 +57,4 @@ public class URIValue implements Value {
     public boolean equals(Object value) {
         return (value instanceof URIValue) && ((URIValue) value).value.equals(value);
     }
-
-    @Override
-    public boolean hasPlainSerialization() {
-        return true;
-    }
 }
