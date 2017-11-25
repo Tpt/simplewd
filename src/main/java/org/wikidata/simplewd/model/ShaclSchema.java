@@ -20,6 +20,7 @@ import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.util.RDFCollections;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -29,6 +30,7 @@ import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -156,6 +158,7 @@ public class ShaclSchema {
             Set<String> datatypes = Stream.concat(
                     Stream.of(id),
                     Models.getPropertyResources(model, id, SH_OR).stream()
+                            .flatMap(head -> RDFCollections.asValues(model, head, new ArrayList<>()).stream().map(v -> (Resource) v))
             ).flatMap(node -> Models.getPropertyIRIs(model, node, SH_DATATYPE).stream())
                     .map(dt -> Namespaces.reduce(dt.toString()))
                     .collect(Collectors.toSet());
@@ -163,7 +166,11 @@ public class ShaclSchema {
         }
 
         public Optional<NodeShape> getNodeShape() {
-            Set<Resource> shapes = Models.getPropertyResources(model, id, SH_NODE);
+            Set<Resource> shapes = Stream.concat(
+                    Stream.of(id),
+                    Models.getPropertyResources(model, id, SH_OR).stream()
+                            .flatMap(head -> RDFCollections.asValues(model, head, new ArrayList<>()).stream().map(v -> (Resource) v))
+            ).flatMap(node -> Models.getPropertyResources(model, node, SH_NODE).stream()).collect(Collectors.toSet());
             if (shapes.isEmpty()) {
                 return Optional.empty();
             }
