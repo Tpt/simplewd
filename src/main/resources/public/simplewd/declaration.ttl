@@ -15,7 +15,21 @@ swd:
 
 # some utility shapes
 
-sh:startDate a sh:PropertyShape ;
+swd:actor a sh:PropertyShape ;
+    sh:path schema:actor ;
+    sh:node [
+        rdfs:label "ActorRole" ;
+        sh:property sh:startDate ;
+        sh:property swd:endDate  ;
+        sh:property [
+            sh:path schema:alumniOf ;
+            sh:shape swd:Organization ;
+            sh:minCount 1 ;
+            sh:maxCount 1 ;
+        ]
+    ] .
+
+swd:startDate a sh:PropertyShape ;
     sh:path schema:startDate ;
     sh:or (
         [
@@ -33,7 +47,7 @@ sh:startDate a sh:PropertyShape ;
     ) ;
     sh:maxCount 1 .
 
-sh:endDate a sh:PropertyShape ;
+swd:endDate a sh:PropertyShape ;
     sh:path schema:endDate ;
     sh:or (
         [
@@ -82,8 +96,137 @@ swd:Thing a sh:NodeShape ;
     ] .
 
 
+swd:CreativeWork a sh:NodeShape ;
+    sh:targetClass schema:CreativeWork ;
+    sh:property [
+        sh:path schema:author ;
+        sh:or (
+            [
+                sh:shape swd:Organization
+            ]
+            [
+                sh:shape swd:Person
+            ]
+        ) ;
+    ] ;
+    sh:property [
+        sh:path schema:editor ;
+        sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:genre ;
+        sh:shape swd:Thing ;
+    ] ;
+    sh:property [
+        sh:path schema:isBasedOn ;
+        sh:shape swd:CreativeWork ;
+    ] ;
+    sh:property [
+        sh:path schema:publisher ;
+        sh:or (
+            [
+                sh:shape swd:Organization
+            ]
+            [
+                sh:shape swd:Person
+            ]
+        ) ;
+    ] ;
+
+
+swd:Book a sh:NodeShape ;
+    sh:targetClass schema:Book ;
+    sh:property [
+        sh:path schema:illustrator ;
+        sh:shape swd:Person ;
+    ] .
+
+
+
+swd:CreativeWorkSeason a sh:NodeShape ;
+    sh:targetClass schema: CreativeWorkSeries ;
+    sh:property swd:actor .
+
+
+swd:CreativeWorkSeries a sh:NodeShape ;
+    sh:targetClass schema: CreativeWorkSeries .
+
+
+swd:MovieSeries a sh:NodeShape ;
+    sh:targetClass schema:MovieSeries ;
+    sh:property swd:actor ;
+    sh:property [
+        sh:path schema:director ;
+        sh:shape swd:Person ;
+    ] .
+
+
+swd:RadioSeries a sh:NodeShape ;
+    sh:targetClass schema:MovieSeries ;
+    sh:property swd:actor ;
+    sh:property [
+        sh:path schema:director ;
+        sh:shape swd:Person ;
+    ] .
+
+
+swd:TVSeries a sh:NodeShape ;
+    sh:targetClass schema:TVSeries ;
+    sh:property swd:actor ;
+    sh:property [
+        sh:path schema:director ;
+        sh:shape swd:Person ;
+    ] .
+
+swd:VideoGameSeries a sh:NodeShape ;
+    sh:targetClass schema:VideoGameSeries ;
+    sh:property [
+        sh:path schema:director ;
+        sh:shape swd:Person ;
+    ] .
+
+
+swd:Episode a sh:NodeShape ;
+    sh:targetClass schema:Episode ;
+    sh:property swd:actor ;
+    sh:property [
+        sh:path schema:director ;
+        sh:shape swd:Person ;
+    ] .
+
+
+swd:Movie a sh:NodeShape ;
+    sh:targetClass schema:Movie ;
+    sh:property swd:actor ;
+    sh:property [
+        sh:path schema:director ;
+        sh:shape swd:Person ;
+    ] .
+
+
+swd:VideoGame a sh:NodeShape ;
+    sh:targetClass schema:VideoGame ;
+    sh:property swd:actor ;
+    sh:property [
+        sh:path schema:director ;
+        sh:shape swd:Person ;
+    ] .
+
+
 swd:Organization a sh:NodeShape ;
-    sh:targetClass schema:Organization .
+    sh:targetClass schema:Organization ;
+    sh:property [
+        sh:path schema:founder ;
+        sh:shape swd:Person ;
+    ] .
+
+
+swd:MusicGroup a sh:NodeShape ;
+   sh:targetClass schema:MusicGroup ;
+    sh:property [
+        sh:path schema:genre ;
+        sh:shape swd:Thing ;
+    ] .
 
 
 swd:Person a sh:NodeShape ;
@@ -92,8 +235,8 @@ swd:Person a sh:NodeShape ;
         sh:path schema:alumniOf ;
         sh:node [
             rdfs:label "AlumniRole" ;
-            sh:property sh:startDate ;
-            sh:property sh:endDate ;
+            sh:property swd:startDate  ;
+            sh:property swd:endDate  ;
             sh:property [
                 sh:path schema:alumniOf ;
                 sh:shape swd:Organization ;
@@ -126,14 +269,100 @@ swd:Person a sh:NodeShape ;
         sh:maxCount 1 ;
     ] ;
     sh:property [
+        sh:path schema:children ;
+        sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:deathDate ;
+        sh:or (
+            [
+                sh:datatype xsd:dateTime
+            ]
+            [
+                sh:datatype xsd:date
+            ]
+            [
+                sh:datatype xsd:gYearMonth
+            ]
+            [
+                sh:datatype xsd:gYear
+            ]
+        ) ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:deathPlace ;
+        sh:node swd:Place ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
         sh:path schema:gender ;
         sh:node [
             rdfs:label "Gender" ;
             sh:in ( schema:Male schema:Female ) ;
         ] ;
         sh:maxCount 1 ;
-    ] .
+    ] ;
+    sh:property [
+        sh:path schema:nationality ;
+        sh:node [
+            rdfs:label "NationalityRole" ;
+            sh:property swd:startDate  ;
+            sh:property swd:endDate  ;
+            sh:property [
+                sh:path schema:nationality ;
+                sh:shape swd:Country ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+            ]
+        ]
+    ] ;
+    sh:property [
+        sh:path schema:parent ;
+        sh:shape swd:Person ;
+        sh:maxCount 2 ;
+    ] ;
+    sh:property [
+        sh:path schema:spouse ;
+        sh:node [
+            rdfs:label "SpouseRole" ;
+            sh:property swd:startDate  ;
+            sh:property swd:endDate  ;
+            sh:property [
+                sh:path schema:spouse ;
+                sh:shape swd:Person ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+            ]
+        ]
+    ] ;
+    sh:property [
+        sh:path schema:worksFor ;
+        sh:node [
+            rdfs:label "WorksForRole" ;
+            sh:property swd:startDate  ;
+            sh:property swd:endDate  ;
+            sh:property [
+                sh:path schema:worksFor ;
+                sh:shape swd:Organization ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+            ]
+        ]
+    ] ;
 
 
 swd:Place a sh:NodeShape ;
-    sh:targetClass schema:Place .
+    sh:targetClass schema:Place ;
+    sh:property [
+        sh:path schema:containedInPlace ;
+        sh:shape swd:Place ;
+    ] ;
+    sh:property [
+        sh:path schema:containsPlace ;
+        sh:shape swd:Place ;
+    ] .
+
+
+swd:Country a sh:NodeShape ;
+    sh:targetClass schema:Country .
