@@ -19,14 +19,18 @@ swd:actor a sh:PropertyShape ;
     sh:path schema:actor ;
     sh:node [
         rdfs:label "ActorRole" ;
-        sh:property sh:startDate ;
-        sh:property swd:endDate  ;
+        sh:property swd:startDate ;
+        sh:property swd:endDate ;
         sh:property [
-            sh:path schema:alumniOf ;
-            sh:shape swd:Organization ;
+            sh:path schema:actor ;
+            sh:shape swd:Person ;
             sh:minCount 1 ;
             sh:maxCount 1 ;
-        ]
+        ] ;
+        sh:property [
+            sh:path schema:character ;
+            sh:shape swd:Thing ;
+        ] ;
     ] .
 
 swd:startDate a sh:PropertyShape ;
@@ -99,7 +103,22 @@ swd:Thing a sh:NodeShape ;
 swd:CreativeWork a sh:NodeShape ;
     sh:targetClass schema:CreativeWork ;
     sh:property [
+        sh:path schema:award ;
+        sh:shape swd:Thing ;
+    ] ;
+    sh:property [
         sh:path schema:author ;
+        sh:or (
+            [
+                sh:shape swd:Organization
+            ]
+            [
+                sh:shape swd:Person
+            ]
+        ) ;
+    ] ;
+    sh:property [
+        sh:path schema:creator ;
         sh:or (
             [
                 sh:shape swd:Organization
@@ -122,7 +141,19 @@ swd:CreativeWork a sh:NodeShape ;
         sh:shape swd:CreativeWork ;
     ] ;
     sh:property [
-        sh:path schema:publisher ;
+        sh:path schema:isPartOf ;
+        sh:shape swd:CreativeWork ;
+    ] ;
+    sh:property [
+        sh:path schema:license ;
+        sh:shape swd:CreativeWork ;
+    ] ;
+    sh:property [
+        sh:path schema:material ;
+        sh:shape swd:Thing ;
+    ] ;
+    sh:property [
+        sh:path schema:producer ;
         sh:or (
             [
                 sh:shape swd:Organization
@@ -132,6 +163,28 @@ swd:CreativeWork a sh:NodeShape ;
             ]
         ) ;
     ] ;
+    sh:property [
+        sh:path schema:provider ;
+        sh:or (
+            [
+                sh:shape swd:Organization
+            ]
+            [
+                sh:shape swd:Person
+            ]
+        ) ;
+    ] ;
+    sh:property [
+        sh:path schema:publisher ;
+        sh:or (
+            [
+                sh:shape swd:Organization
+            ]
+            [
+                sh:shape swd:Person
+            ]
+        ) ;
+    ] .
 
 
 swd:Book a sh:NodeShape ;
@@ -139,17 +192,26 @@ swd:Book a sh:NodeShape ;
     sh:property [
         sh:path schema:illustrator ;
         sh:shape swd:Person ;
+    ] ;
+    sh:property [ #TODO: pattern
+        sh:path schema:isbn ;
+        sh:datatype xsd:dateTime ;
+        sh:maxCount 1 ;
     ] .
 
 
 
 swd:CreativeWorkSeason a sh:NodeShape ;
-    sh:targetClass schema: CreativeWorkSeries ;
-    sh:property swd:actor .
+    sh:targetClass schema:CreativeWorkSeries ;
+    sh:property swd:actor ;
+    sh:property [
+        sh:path schema:productionCompany ;
+        sh:shape swd:Organization ;
+    ] .
 
 
 swd:CreativeWorkSeries a sh:NodeShape ;
-    sh:targetClass schema: CreativeWorkSeries .
+    sh:targetClass schema:CreativeWorkSeries .
 
 
 swd:MovieSeries a sh:NodeShape ;
@@ -158,6 +220,10 @@ swd:MovieSeries a sh:NodeShape ;
     sh:property [
         sh:path schema:director ;
         sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:productionCompany ;
+        sh:shape swd:Organization ;
     ] .
 
 
@@ -167,6 +233,10 @@ swd:RadioSeries a sh:NodeShape ;
     sh:property [
         sh:path schema:director ;
         sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:productionCompany ;
+        sh:shape swd:Organization ;
     ] .
 
 
@@ -176,6 +246,10 @@ swd:TVSeries a sh:NodeShape ;
     sh:property [
         sh:path schema:director ;
         sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:productionCompany ;
+        sh:shape swd:Organization ;
     ] .
 
 swd:VideoGameSeries a sh:NodeShape ;
@@ -183,6 +257,10 @@ swd:VideoGameSeries a sh:NodeShape ;
     sh:property [
         sh:path schema:director ;
         sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:productionCompany ;
+        sh:shape swd:Organization ;
     ] .
 
 
@@ -192,7 +270,33 @@ swd:Episode a sh:NodeShape ;
     sh:property [
         sh:path schema:director ;
         sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:productionCompany ;
+        sh:shape swd:Organization ;
     ] .
+
+
+swd:MusicComposition a sh:NodeShape ;
+    sh:targetClass schema:MusicComposition ;
+    sh:property [
+        sh:path schema:iswcCode ;
+        sh:datatype xsd:string ;
+        sh:pattern "T-[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]" ;
+        sh:maxCount 1 ;
+    ] .
+
+
+swd:MusicPlaylist a sh:NodeShape ;
+   sh:targetClass schema:MusicPlaylist .
+
+
+swd:MusicAlbum a sh:NodeShape ;
+   sh:targetClass schema:MusicAlbum ;
+   sh:property [
+       sh:path schema:byArtist ;
+       sh:shape swd:MusicGroup ;
+   ] .
 
 
 swd:Movie a sh:NodeShape ;
@@ -201,6 +305,18 @@ swd:Movie a sh:NodeShape ;
     sh:property [
         sh:path schema:director ;
         sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:productionCompany ;
+        sh:shape swd:Organization ;
+    ] .
+
+
+swd:PublicationIssue a sh:NodeShape ;
+    sh:targetClass schema:PublicationIssue ;
+    sh:property [
+        sh:path schema:issueNumber ;
+        sh:datatype xsd:string
     ] .
 
 
@@ -213,16 +329,68 @@ swd:VideoGame a sh:NodeShape ;
     ] .
 
 
+swd:Event a sh:NodeShape ;
+    sh:targetClass schema:Event ;
+    sh:property [
+        sh:path schema:location ;
+        sh:shape swd:Place ;
+    ] .
+
+
 swd:Organization a sh:NodeShape ;
     sh:targetClass schema:Organization ;
     sh:property [
+        sh:path schema:award ;
+        sh:shape swd:Thing ;
+    ] ;
+    sh:property [
         sh:path schema:founder ;
         sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:leiCode ;
+        sh:datatype xsd:string ;
+        sh:pattern "[0-9A-Z]{18}[0-9]{2}" ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:location ;
+        sh:shape swd:Place ;
+    ] ;
+    sh:property [
+        sh:path schema:memberOf ;
+        sh:node [
+            rdfs:label "MembershipRole" ;
+            sh:property swd:startDate  ;
+            sh:property swd:endDate  ;
+            sh:property [
+                sh:path schema:memberOf ;
+                sh:shape swd:Organization ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+            ]
+        ]
+    ] .
+
+
+swd:Airline a sh:NodeShape ;
+    sh:targetClass schema:Airline ;
+    sh:property [
+        sh:path schema:iataCode ;
+        sh:datatype xsd:string ;
+        sh:pattern "[A-Z0-9]{2}" ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:icaoCode ;
+        sh:datatype xsd:string ;
+        sh:pattern "[A-Z]{3}" ;
+        sh:maxCount 1 ;
     ] .
 
 
 swd:MusicGroup a sh:NodeShape ;
-   sh:targetClass schema:MusicGroup ;
+    sh:targetClass schema:MusicGroup ;
     sh:property [
         sh:path schema:genre ;
         sh:shape swd:Thing ;
@@ -244,6 +412,10 @@ swd:Person a sh:NodeShape ;
                 sh:maxCount 1 ;
             ]
         ]
+    ] ;
+    sh:property [
+        sh:path schema:award ;
+        sh:shape swd:Thing ;
     ] ;
     sh:property [
         sh:path schema:birthDate ;
@@ -304,6 +476,20 @@ swd:Person a sh:NodeShape ;
         sh:maxCount 1 ;
     ] ;
     sh:property [
+        sh:path schema:memberOf ;
+        sh:node [
+            rdfs:label "MembershipRole" ;
+            sh:property swd:startDate  ;
+            sh:property swd:endDate  ;
+            sh:property [
+                sh:path schema:memberOf ;
+                sh:shape swd:Organization ;
+                sh:minCount 1 ;
+                sh:maxCount 1 ;
+            ]
+        ]
+    ] ;
+    sh:property [
         sh:path schema:nationality ;
         sh:node [
             rdfs:label "NationalityRole" ;
@@ -349,7 +535,7 @@ swd:Person a sh:NodeShape ;
                 sh:maxCount 1 ;
             ]
         ]
-    ] ;
+    ] .
 
 
 swd:Place a sh:NodeShape ;
@@ -364,5 +550,43 @@ swd:Place a sh:NodeShape ;
     ] .
 
 
+swd:AdministrativeArea a sh:NodeShape ;
+    sh:targetClass schema:AdministrativeArea .
+
+
+swd:City a sh:NodeShape ;
+    sh:targetClass schema:City ;
+    sh:property [
+        sh:path schema:iataCode ;
+        sh:datatype xsd:string ;
+        sh:pattern "[A-Z]{3}" ;
+        sh:maxCount 1 ;
+    ] .
+
+
 swd:Country a sh:NodeShape ;
     sh:targetClass schema:Country .
+
+
+swd:State a sh:NodeShape ;
+    sh:targetClass schema:State .
+
+
+swd:CivicStructure a sh:NodeShape ;
+    sh:targetClass schema:CivicStructure .
+
+
+swd:Airport a sh:NodeShape ;
+    sh:targetClass schema:Airport ;
+    sh:property [
+        sh:path schema:iataCode ;
+        sh:datatype xsd:string ;
+        sh:pattern "[A-Z]{3}" ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:icaoCode ;
+        sh:datatype xsd:string ;
+        sh:pattern "([A-Z]{2}|[CKY][A-Z0-9])[A-Z0-9]{2}" ;
+        sh:maxCount 1 ;
+    ] .

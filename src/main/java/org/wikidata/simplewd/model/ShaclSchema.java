@@ -151,7 +151,7 @@ public class ShaclSchema {
         public String getProperty() {
             return Models.getPropertyIRI(model, id, SH_PATH)
                     .map(property -> Namespaces.reduce(property.toString()))
-                    .orElseThrow(() -> new IllegalArgumentException("Each sh:PropertyShape should have a single property sh:path pointing to the IRI of a property"));
+                    .orElseThrow(() -> new IllegalArgumentException("The sh:PropertyShape " + id + " should have a single property sh:path pointing to the IRI of a property"));
         }
 
         public Optional<Set<String>> getDatatypes() {
