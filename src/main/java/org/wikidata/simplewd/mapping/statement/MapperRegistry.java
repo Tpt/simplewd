@@ -63,6 +63,7 @@ public class MapperRegistry {
         addTruthyMapping("P136", new SimpleItemIdSnakMapper("genre"));
         addTruthyMapping("P144", new SimpleItemIdSnakMapper("isBasedOn"));
         addTruthyMapping("P150", new SimpleItemIdSnakMapper("containsPlace"));
+        addTruthyMapping("P154", new CommonsFileSnakMapper("logo"));
         addRoleMapping("P161", "actor");
         addTruthyMapping("P162", new SimpleItemIdSnakMapper("producer"));
         addTruthyMapping("P166", new SimpleItemIdSnakMapper("award"));
@@ -95,7 +96,8 @@ public class MapperRegistry {
         addTruthyMapping("P551", new SimpleItemIdSnakMapper("homeLocation"));
         addTruthyMapping("P569", new TimeSnakMapper("birthDate"));
         addTruthyMapping("P570", new TimeSnakMapper("deathDate"));
-        addTruthyMapping("P571", new TimeSnakMapper("dateCreated"));
+        addTruthyMapping("P571", new TimeSnakMapper("foundingDate")); //TODO: dateCreated
+        addTruthyMapping("P576", new TimeSnakMapper("dissolutionDate"));
         addTruthyMapping("P577", new TimeSnakMapper("datePublished"));
         addTruthyMapping("P625", new GlobeCoordinatesSnakMapper("geo"));
         addTruthyMapping("P646", new ExternalIdentifierSnakMapper("http://g.co/kg$1", "(/m/0[0-9a-z_]{2,6}|/m/01[0123][0-9a-z_]{5})"));
@@ -104,6 +106,7 @@ public class MapperRegistry {
         addTruthyMapping("P676", new SimpleItemIdSnakMapper("lyricist"));
         addTruthyMapping("P734", new SimpleItemIdSnakMapper("familyName"));
         addTruthyMapping("P735", new SimpleItemIdSnakMapper("givenName"));
+        addTruthyMapping("P740", new SimpleItemIdSnakMapper("foundingLocation"));
         addTruthyMapping("P767", new SimpleItemIdSnakMapper("contributor"));
         addTruthyMapping("P840", new SimpleItemIdSnakMapper("contentLocation"));
         addTruthyMapping("P856", new URIStatementMapper("url"));
@@ -141,6 +144,7 @@ public class MapperRegistry {
         addTruthyMapping("P2397", new ExternalIdentifierSnakMapper("http://www.youtube.com/channel/$1", "UC([A-Za-z0-9_\\-]){22}"));
         addTruthyMapping("P2437", new IntegerStatementMapper("numberOfSeasons"));
         addTruthyMapping("P2671", new ExternalIdentifierSnakMapper("http://g.co/kg$1", "\\/g\\/[0-9a-zA-Z]+"));
+        addTruthyMapping("P2771", new SimpleStringSnakMapper("duns", "\\d{9}"));
         addTruthyMapping("P2847", new ExternalIdentifierSnakMapper("http://plus.google.com/$1", "\\d{22}|\\+[-\\w_\\u00C0-\\u00FF]+"));
         addTruthyMapping("P2360", new SimpleItemIdSnakMapper("audience"));
         addTruthyMapping("P2860", new SimpleItemIdSnakMapper("citation"));

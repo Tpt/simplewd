@@ -16,6 +16,7 @@
 
 package org.wikidata.simplewd.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -53,6 +54,7 @@ public class CommonsImage {
     }
 
     //TODO: find a good property
+    @JsonIgnore
     public String getDescriptionURI() {
         return descriptionURI;
     }
@@ -94,6 +96,11 @@ public class CommonsImage {
         @JsonProperty("type")
         public String[] getType() {
             return new String[]{"CreativeWork"};
+        }
+
+        @JsonProperty("url")
+        public String getURL() {
+            return id;
         }
 
         @JsonProperty("name")

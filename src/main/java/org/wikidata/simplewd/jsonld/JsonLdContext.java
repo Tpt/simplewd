@@ -50,7 +50,15 @@ public class JsonLdContext {
         BASIC_CONTEXT.put("month", "xsd:gYearMonth");
         BASIC_CONTEXT.put("year", "xsd:gYear");
 
-        BASIC_CONTEXT.put("contentUrl", Collections.singletonMap("@type", "xsd:anyURI"));
+        BASIC_CONTEXT.put("shape", Collections.singletonMap("@id", "geo"));
+        BASIC_CONTEXT.put("wkt", idAndTypeMap("http://www.opengis.net/ont/geosparql#asWKT", "http://www.opengis.net/ont/geosparql#wktLiteral"));
+    }
+
+    private static Map<String, Object> idAndTypeMap(String id, String type) {
+        Map<String, Object> map = new TreeMap<>();
+        map.put("@id", id);
+        map.put("@type", type);
+        return map;
     }
 
     private Map<String, Object> context;

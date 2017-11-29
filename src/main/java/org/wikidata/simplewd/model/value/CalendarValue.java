@@ -16,6 +16,7 @@
 
 package org.wikidata.simplewd.model.value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -48,6 +49,7 @@ public class CalendarValue implements Value {
         this(DATATYPE_FACTORY.newXMLGregorianCalendar(value));
     }
 
+    @JsonIgnore
     public XMLGregorianCalendar getXMLGregorianCalendar() {
         return value;
     }

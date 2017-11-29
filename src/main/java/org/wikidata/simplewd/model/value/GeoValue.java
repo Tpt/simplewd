@@ -53,7 +53,7 @@ public abstract class GeoValue implements Value {
     }
 
     @Override
-    @JsonProperty("http://www.opengis.net/ont/geosparql#asWKT")
+    @JsonProperty("wkt")
     public String toString() {
         return WKT_WRITER.write(geometry);
     }

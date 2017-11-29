@@ -142,6 +142,7 @@ public class JsonLdBuilder {
                     return Stream.empty();
                 });
                 if (propertyShape.getMaxCount() <= 1) {
+                    propertyValues.put(property, null);
                     values.findAny().ifPresent(value -> propertyValues.put(property, value));
                 } else {
                     propertyValues.put(property, values.collect(Collectors.toList()));
@@ -151,7 +152,7 @@ public class JsonLdBuilder {
 
         if (withChildren) {
             buildGeoValueFromKartographer(entity)
-                    .ifPresent(geoValue -> propertyValues.put("geo", geoValue));
+                    .ifPresent(geoValue -> propertyValues.put("shape", geoValue));
         }
 
         return new JsonLdEntity(entity.getIRI(), entity.getTypes().collect(Collectors.toList()), propertyValues);
