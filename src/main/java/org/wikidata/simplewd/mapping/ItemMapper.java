@@ -45,6 +45,7 @@ public class ItemMapper {
 
     public EntityValue map(ItemDocument document) {
         EntityValue entity = new EntityValue(document.getEntityId().getIri());
+        entity.addType("Thing");
         addTermsToResource(document, entity);
         addSiteLinksToResource(document, entity);
         addStatementsToResource(document, entity);
