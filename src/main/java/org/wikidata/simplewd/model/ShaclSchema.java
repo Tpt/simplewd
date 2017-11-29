@@ -78,16 +78,20 @@ public class ShaclSchema {
                 .map(SingleNodeShape::new);
     }
 
+    public NodeShape getShapeForClass(String class_) {
+        return new IntersectionNodeShape(getShapesForClasses(Stream.of(class_)));
+    }
+
+    public NodeShape getShapeForClasses(Stream<String> classes) {
+        return new IntersectionNodeShape(getShapesForClasses(classes));
+    }
+
     public Stream<NodeShape> getShapesForClasses(Stream<String> classes) {
         return classes
                 .map(className -> VALUE_FACTORY.createIRI(Namespaces.expand(className)))
                 .flatMap(this::getSuperClasses)
                 .distinct()
                 .flatMap(this::getShapesForClass);
-    }
-
-    public NodeShape getShapeForClasses(Stream<String> classes) {
-        return new IntersectionNodeShape(getShapesForClasses(classes));
     }
 
     private Stream<NodeShape> getShapesForClass(Resource classIRI) {

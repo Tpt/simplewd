@@ -56,6 +56,10 @@ public class Claim {
         this(property, new IntegerValue(value));
     }
 
+    public Claim(String property, int value) {
+        this(property, new IntegerValue(value));
+    }
+
     public String getProperty() {
         return property;
     }

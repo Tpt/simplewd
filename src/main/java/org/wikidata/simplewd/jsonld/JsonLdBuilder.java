@@ -36,8 +36,9 @@ public class JsonLdBuilder {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdBuilder.class);
 	private static final ShaclSchema SCHEMA = ShaclSchema.getSchema();
-	private static final Optional<Set<String>> LANG_STRING_RANGE = Optional.of(Collections.singleton("rdf:langString"));
-	private static final KartographerAPI KARTOGRAPHER_API = new KartographerAPI();
+    private static final ShaclSchema.NodeShape IMAGE_OBJECT_SHAPE = SCHEMA.getShapeForClass("ImageObject");
+    private static final Optional<Set<String>> LANG_STRING_RANGE = Optional.of(Collections.singleton("rdf:langString"));
+    private static final KartographerAPI KARTOGRAPHER_API = new KartographerAPI();
 
 	private EntityLookup entityLookup;
 	private CommonsAPI commonsAPI;
@@ -126,7 +127,7 @@ public class JsonLdBuilder {
                     } else if (value instanceof CommonsFileValue) {
                         if (withChildren) {
                             try {
-                                return Stream.of(commonsAPI.getImage(value.toString()));
+                                return Stream.of(mapEntity(commonsAPI.getImage(value.toString()), false, localeFilter, IMAGE_OBJECT_SHAPE));
                             } catch (Exception e) {
                                 LOGGER.info(e.getMessage(), e);
                             }

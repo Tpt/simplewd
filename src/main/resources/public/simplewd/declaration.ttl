@@ -388,15 +388,18 @@ swd:ImageObject a sh:NodeShape ;
     sh:property [
         sh:path schema:contentUrl ;
         sh:datatype xsd:anyURI ;
+        sh:maxCount 1 ;
     ] ;
     sh:property [
         sh:path schema:fileFormat ;
         sh:datatype xsd:string ;
         sh:pattern "^(application|audio|example|font|image|message|model|multipart|text|video)/[a-zA-Z0-9\-+.]+$" ;
+        sh:maxCount 1 ;
     ] ;
     sh:property [
         sh:path schema:height ;
         sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
     ] ;
     sh:property [
         sh:path schema:license ;
@@ -405,6 +408,7 @@ swd:ImageObject a sh:NodeShape ;
     sh:property [
         sh:path schema:width ;
         sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
     ] .
 
 

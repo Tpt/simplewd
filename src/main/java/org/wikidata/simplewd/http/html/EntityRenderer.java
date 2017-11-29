@@ -86,7 +86,7 @@ public class EntityRenderer extends HTMLRenderer {
     private DomContent renderThingCard(EntityValue entity) {
         DomContent title = localeFilter.getBestValues(entity.getValues("name")).findAny().map(this::simpleRender).orElse(text(entity.getIRI()));
         Optional<DomContent> subtitle = localeFilter.getBestValues(entity.getValues("description")).findAny().map(this::simpleRender);
-        Optional<CommonsImage> image = entity.getValue("image").flatMap(value -> {
+        Optional<EntityValue> image = entity.getValue("image").flatMap(value -> {
             try {
                 return Optional.of(commonsAPI.getImage(value.toString()));
             } catch (IOException e) {
@@ -101,9 +101,10 @@ public class EntityRenderer extends HTMLRenderer {
                 ).withClass("mdc-card__primary")
         ).withClass("mdc-card__horizontal-block");
         image.ifPresent(desc ->
-                cardHeader.with(a(img().withSrc(
-                        desc.getContentURI()).withClass("mdc-card__media-item")
-                ).withHref(desc.getDescriptionURI()))
+                desc.getValue("contentUrl").ifPresent(url ->
+                        cardHeader.with(a(img().withSrc(url.toString()).withClass("mdc-card__media-item")
+                        )) //TODO: link to commons
+                )
         );
 
         List<ContainerTag> actions = new ArrayList<>();

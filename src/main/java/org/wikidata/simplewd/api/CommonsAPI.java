@@ -21,9 +21,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import org.wikidata.simplewd.model.CommonsImage;
+import org.slf4j.LoggerFactory;
+import org.wikidata.simplewd.model.Claim;
+import org.wikidata.simplewd.model.value.EntityValue;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.concurrent.ExecutionException;
@@ -34,20 +38,21 @@ import java.util.concurrent.TimeUnit;
  */
 public class CommonsAPI {
 
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CommonsAPI.class);
     private static final String URL_TEMPLATE = "https://commons.wikimedia.org/w/api.php?action=query&format=json&titles=File:$1&prop=imageinfo&iiprop=timestamp|url|size|mime|mediatype|extmetadata&iiextmetadatafilter=DateTime|DateTimeOriginal|ObjectName|ImageDescription|License|LicenseShortName|UsageTerms|LicenseUrl|Credit|Artist|AuthorCount|GPSLatitude|GPSLongitude|Permission|Attribution|AttributionRequired|NonFree|Restrictions|DeletionReason";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private LoadingCache<String, CommonsImage> imageCache = CacheBuilder.newBuilder()
+    private LoadingCache<String, EntityValue> imageCache = CacheBuilder.newBuilder()
             .maximumSize(16384) //TODO: configure?
             .expireAfterWrite(14, TimeUnit.DAYS)
-            .build(new CacheLoader<String, CommonsImage>() {
+            .build(new CacheLoader<String, EntityValue>() {
                 @Override
-                public CommonsImage load(String title) throws IOException {
+                public EntityValue load(String title) throws IOException {
                     return requestImage(title);
                 }
             });
 
-    public CommonsImage getImage(String title) throws IOException {
+    public EntityValue getImage(String title) throws IOException {
         try {
             return imageCache.get(title);
         } catch (ExecutionException e) {
@@ -55,7 +60,7 @@ public class CommonsAPI {
         }
     }
 
-    private CommonsImage requestImage(String title) throws IOException {
+    private EntityValue requestImage(String title) throws IOException {
         URL apiURL = new URL(URL_TEMPLATE.replace("$1", URLEncoder.encode(title, "UTF-8")));
         JsonNode rootNode = OBJECT_MAPPER.readTree(apiURL.openStream());
         if (rootNode.isObject() && rootNode.has("query")) {
@@ -64,7 +69,17 @@ public class CommonsAPI {
                 for (JsonNode pageNode : queryNode.get("pages")) {
                     if (pageNode.isObject() && pageNode.has("imageinfo")) {
                         for (JsonNode infoNode : pageNode.get("imageinfo")) {
-                            CommonsImage.License license = null;
+                            EntityValue image = new EntityValue("http://commons.wikimedia.org/wiki/Special:FilePath/" + title);
+                            image.addType("ImageObject");
+                            try {
+                                image.addClaim(new Claim("contentUrl", new URI(infoNode.get("url").asText())));
+                            } catch (URISyntaxException e) {
+                                LOGGER.warn("Invalid file URI: " + infoNode.get("url").asText());
+                            }
+                            image.addClaim(new Claim("fileFormat", infoNode.get("mime").asText()));
+                            image.addClaim(new Claim("width", infoNode.get("width").asInt()));
+                            image.addClaim(new Claim("height", infoNode.get("height").asInt()));
+
                             if (infoNode.has("extmetadata")) {
                                 JsonNode metadata = infoNode.get("extmetadata");
                                 String name = "";
@@ -72,18 +87,20 @@ public class CommonsAPI {
                                     name = metadata.get("UsageTerms").get("value").asText();
                                 }
                                 if (metadata.has("LicenseUrl")) {
-                                    license = new CommonsImage.License(metadata.get("LicenseUrl").get("value").asText(), name);
+                                    //TODO: map to Wikidata
+                                    try {
+                                        URI licenceURI = new URI(metadata.get("LicenseUrl").get("value").asText());
+                                        EntityValue license = new EntityValue(licenceURI.toString());
+                                        image.addType("CreativeWork");
+                                        license.addClaim(new Claim("name", name));
+                                        license.addClaim(new Claim("url", licenceURI));
+                                        image.addClaim("license", license);
+                                    } catch (URISyntaxException e) {
+                                        LOGGER.warn("Invalid file URI: " + metadata.get("LicenseUrl").get("value").asText());
+                                    }
                                 }
                             }
-                            return new CommonsImage(
-                                    infoNode.get("url").asText(),
-                                    infoNode.get("descriptionurl").asText(),
-                                    infoNode.get("mime").asText(),
-                                    infoNode.get("width").asInt(),
-                                    infoNode.get("height").asInt(),
-                                    license
-                                    //TODO infoNode.get("timestamp").asText()
-                            );
+                            return image;
                         }
                     }
                 }
