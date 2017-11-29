@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.model.Claim;
 import org.wikidata.simplewd.model.value.EntityValue;
@@ -38,7 +39,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CommonsAPI {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CommonsAPI.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommonsAPI.class);
     private static final String URL_TEMPLATE = "https://commons.wikimedia.org/w/api.php?action=query&format=json&titles=File:$1&prop=imageinfo&iiprop=timestamp|url|size|mime|mediatype|extmetadata&iiextmetadatafilter=DateTime|DateTimeOriginal|ObjectName|ImageDescription|License|LicenseShortName|UsageTerms|LicenseUrl|Credit|Artist|AuthorCount|GPSLatitude|GPSLongitude|Permission|Attribution|AttributionRequired|NonFree|Restrictions|DeletionReason";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 

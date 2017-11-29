@@ -47,6 +47,13 @@ public class EntityValue implements Value {
         types.add(Namespaces.reduce(typeIRI));
     }
 
+    public void addTypes(String... typeIRIs) {
+        for (String typeIRI : typeIRIs) {
+            addType(typeIRI);
+        }
+    }
+
+
     public Stream<Claim> getClaims() {
         return claims.stream();
     }

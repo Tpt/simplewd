@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.CommonsAPI;
 import org.wikidata.simplewd.api.WikidataAPI;
+import org.wikidata.simplewd.api.WikipediaAPI;
 import org.wikidata.simplewd.http.html.EntityRenderer;
 import org.wikidata.simplewd.http.html.MainRenderer;
 import org.wikidata.simplewd.http.html.SwaggerRenderer;
@@ -41,13 +42,15 @@ public class Main {
 
     private EntityLookup entityLookup;
     private CommonsAPI commonsAPI;
+    private WikipediaAPI wikipediaAPI;
     private JsonLdBuilder jsonLdBuilder;
     private EntityRenderer entityRenderer;
 
     private Main() throws IOException {
         entityLookup = new WikidataAPI();
         commonsAPI = new CommonsAPI();
-        jsonLdBuilder = new JsonLdBuilder(entityLookup, commonsAPI);
+        wikipediaAPI = new WikipediaAPI();
+        jsonLdBuilder = new JsonLdBuilder(entityLookup, commonsAPI, wikipediaAPI);
         entityRenderer = new EntityRenderer(entityLookup, commonsAPI);
     }
 

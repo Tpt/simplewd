@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.CommonsAPI;
 import org.wikidata.simplewd.api.KartographerAPI;
+import org.wikidata.simplewd.api.WikipediaAPI;
 import org.wikidata.simplewd.model.*;
 import org.wikidata.simplewd.model.value.*;
 
@@ -34,19 +35,22 @@ import java.util.stream.Stream;
  */
 public class JsonLdBuilder {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdBuilder.class);
-	private static final ShaclSchema SCHEMA = ShaclSchema.getSchema();
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonLdBuilder.class);
+    private static final ShaclSchema SCHEMA = ShaclSchema.getSchema();
     private static final ShaclSchema.NodeShape IMAGE_OBJECT_SHAPE = SCHEMA.getShapeForClass("ImageObject");
+    private static final ShaclSchema.NodeShape ARTICLE_SHAPE = SCHEMA.getShapeForClass("Article");
     private static final Optional<Set<String>> LANG_STRING_RANGE = Optional.of(Collections.singleton("rdf:langString"));
     private static final KartographerAPI KARTOGRAPHER_API = new KartographerAPI();
 
-	private EntityLookup entityLookup;
-	private CommonsAPI commonsAPI;
+    private EntityLookup entityLookup;
+    private CommonsAPI commonsAPI;
+    private WikipediaAPI wikipediaAPI;
 
-	public JsonLdBuilder(EntityLookup entityLookup, CommonsAPI commonsAPI) {
-		this.entityLookup = entityLookup;
-		this.commonsAPI = commonsAPI;
-	}
+    public JsonLdBuilder(EntityLookup entityLookup, CommonsAPI commonsAPI, WikipediaAPI wikipediaAPI) {
+        this.entityLookup = entityLookup;
+        this.commonsAPI = commonsAPI;
+        this.wikipediaAPI = wikipediaAPI;
+    }
 
     public JsonLdRoot<JsonLdEntity> buildEntity(EntityValue entity, LocaleFilter localeFilter) {
         return new JsonLdRoot<>(
@@ -152,6 +156,10 @@ public class JsonLdBuilder {
         });
 
         if (withChildren) {
+            buildArticleFromWikipedia(entity, localeFilter)
+                    .ifPresent(article -> propertyValues.put("mainEntityOfPage", new Object[]{
+                            mapEntity(article, true, localeFilter, ARTICLE_SHAPE)
+                    }));
             buildGeoValueFromKartographer(entity)
                     .ifPresent(geoValue -> propertyValues.put("shape", geoValue));
         }
@@ -159,40 +167,56 @@ public class JsonLdBuilder {
         return new JsonLdEntity(entity.getIRI(), entity.getTypes().collect(Collectors.toList()), propertyValues);
     }
 
-    private Optional<Object> buildGeoValueFromKartographer(EntityValue entity) {
+    private Optional<GeoValue> buildGeoValueFromKartographer(EntityValue entity) {
         try {
-			//We only do geo shape lookup for Places in order to avoid unneeded requests
-			if (entity.getTypes().anyMatch(type -> type.equals("Place"))) {
-				Geometry shape = KARTOGRAPHER_API.getShapeForItemId(Namespaces.expand(entity.getIRI()));
-				if (!shape.isEmpty()) {
-					return Optional.of(GeoValue.buildGeoValue(shape));
-				}
-			}
-		} catch (IOException e) {
-			LOGGER.error(e.getMessage(), e);
-		}
-		return Optional.empty();
-	}
+            //We only do geo shape lookup for Places in order to avoid unneeded requests
+            if (entity.getTypes().anyMatch(type -> type.equals("Place"))) {
+                Geometry shape = KARTOGRAPHER_API.getShapeForItemId(Namespaces.expand(entity.getIRI()));
+                if (!shape.isEmpty()) {
+                    return Optional.of(GeoValue.buildGeoValue(shape));
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return Optional.empty();
+    }
 
-	private JsonLdContext buildContext(boolean multilingual) {
-		JsonLdContext context = new JsonLdContext();
+    private Optional<EntityValue> buildArticleFromWikipedia(EntityValue entity, LocaleFilter localeFilter) {
+        //We only do geo shape lookup for Places in order to avoid unneeded requests
+        return entity.getValues("sameAs")
+                .map(v -> (URIValue) v)
+                .filter(uri -> uri.getURI().getHost().equals(localeFilter.getBestLocale().getLanguage() + ".wikipedia.org"))
+                .findAny()
+                .flatMap(uri -> {
+                    try {
+                        return Optional.of(wikipediaAPI.getWikipediaArticle(uri.toString()));
+                    } catch (IOException e) {
+                        LOGGER.error(e.getMessage(), e);
+                        return Optional.empty();
+                    }
+                });
+    }
 
-		SCHEMA.getNodeShapes().forEach(nodeShape -> nodeShape.getProperties().forEach(propertyShape -> {
+    private JsonLdContext buildContext(boolean multilingual) {
+        JsonLdContext context = new JsonLdContext();
+
+        SCHEMA.getNodeShapes().forEach(nodeShape -> nodeShape.getProperties().forEach(propertyShape -> {
             propertyShape.getNodeShape().ifPresent(rangeShape ->
                     context.addPropertyRange(propertyShape.getProperty(), "@id")
             );
             propertyShape.getDatatypes().ifPresent(datatypes -> {
-				if (datatypes.size() == 1) {
-					if (datatypes.equals(Collections.singleton("rdf:langString"))) {
-						if (multilingual) {
-							context.addLanguageContainerToProperty(propertyShape.getProperty());
-						}
-					} else {
-						context.addPropertyRange(propertyShape.getProperty(), datatypes.iterator().next());
-					}
-				}
-			});
-		}));
-		return context;
-	}
+                if (datatypes.size() == 1) {
+                    if (datatypes.equals(Collections.singleton("rdf:langString"))) {
+                        if (multilingual) {
+                            context.addLanguageContainerToProperty(propertyShape.getProperty());
+                        }
+                    } else {
+                        context.addPropertyRange(propertyShape.getProperty(), datatypes.iterator().next());
+                    }
+                }
+            });
+        }));
+        return context;
+    }
 }

@@ -88,6 +88,10 @@ swd:Thing a sh:NodeShape ;
         sh:shape swd:ImageObject ;
     ] ;
     sh:property [
+        sh:path schema:mainEntityOfPage ;
+        sh:shape swd:Article ;
+    ] ;
+    sh:property [
         sh:path schema:name ;
         sh:datatype rdf:langString ;
         sh:uniqueLang true ;
@@ -207,6 +211,15 @@ swd:CreativeWork a sh:NodeShape ;
                 sh:shape swd:Person
             ]
         ) ;
+    ] .
+
+
+swd:Article a sh:NodeShape ;
+    sh:targetClass schema:Article ;
+    sh:property [
+        sh:path schema:articleBody ;
+        sh:datatype rdf:langString ;
+        sh:maxCount 1 ;
     ] .
 
 
