@@ -78,13 +78,16 @@ public class ShaclSchema {
                 .map(SingleNodeShape::new);
     }
 
-    public NodeShape getShapeForClasses(Stream<String> classes) {
-        return new UnionNodeShape(classes
+    public Stream<NodeShape> getShapesForClasses(Stream<String> classes) {
+        return classes
                 .map(className -> VALUE_FACTORY.createIRI(Namespaces.expand(className)))
                 .flatMap(this::getSuperClasses)
                 .distinct()
-                .flatMap(this::getShapesForClass)
-        );
+                .flatMap(this::getShapesForClass);
+    }
+
+    public NodeShape getShapeForClasses(Stream<String> classes) {
+        return new IntersectionNodeShape(getShapesForClasses(classes));
     }
 
     private Stream<NodeShape> getShapesForClass(Resource classIRI) {
@@ -99,6 +102,8 @@ public class ShaclSchema {
     }
 
     public interface NodeShape {
+        String getName();
+
         Stream<String> getClasses();
 
         Stream<PropertyShape> getProperties();
@@ -112,7 +117,19 @@ public class ShaclSchema {
         }
 
         @Override
+        public String getName() {
+            return Models.getPropertyResource(model, id, SH_TARGET_CLASS)
+                    .flatMap(target -> Models.getPropertyString(model, target, RDFS.LABEL))
+                    .orElseGet(() ->
+                            Models.getPropertyString(model, id, RDFS.LABEL).orElseGet(() ->
+                                    (id instanceof IRI) ? ((IRI) id).getLocalName() : id.toString()
+                            )
+                    );
+        }
+
+        @Override
         public Stream<String> getClasses() {
+            //TODO: simplify with rdfs:subClassOf
             return Models.getPropertyIRIs(model, id, SH_TARGET_CLASS).stream()
                     .map(IRI -> Namespaces.reduce(IRI.toString()));
         }
@@ -131,7 +148,37 @@ public class ShaclSchema {
         }
 
         @Override
+        public String getName() {
+            return shapes.stream().map(NodeShape::getName).sorted().collect(Collectors.joining("Or"));
+        }
+
+        @Override
         public Stream<String> getClasses() {
+            return shapes.stream().flatMap(NodeShape::getClasses);
+        }
+
+        @Override
+        public Stream<PropertyShape> getProperties() {
+            return shapes.stream().flatMap(NodeShape::getProperties);
+        }
+    }
+
+    private class IntersectionNodeShape implements NodeShape {
+        private Set<NodeShape> shapes;
+
+        private IntersectionNodeShape(Stream<NodeShape> shapes) {
+            this.shapes = shapes.collect(Collectors.toSet());
+        }
+
+        @Override
+        public String getName() {
+            //TODO: simplify with rdfs:subClassOf
+            return shapes.stream().map(NodeShape::getName).sorted().collect(Collectors.joining("And"));
+        }
+
+        @Override
+        public Stream<String> getClasses() {
+            //TODO: simplify with rdfs:subClassOf
             return shapes.stream().flatMap(NodeShape::getClasses);
         }
 

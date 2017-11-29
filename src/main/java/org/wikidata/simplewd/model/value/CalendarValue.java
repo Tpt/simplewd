@@ -48,6 +48,10 @@ public class CalendarValue implements Value {
         this(DATATYPE_FACTORY.newXMLGregorianCalendar(value));
     }
 
+    public XMLGregorianCalendar getXMLGregorianCalendar() {
+        return value;
+    }
+
     @Override
     @JsonProperty("precision")
     public String getType() {

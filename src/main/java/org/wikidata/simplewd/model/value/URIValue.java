@@ -16,6 +16,7 @@
 
 package org.wikidata.simplewd.model.value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URI;
@@ -34,6 +35,11 @@ public class URIValue implements Value {
 
     public URIValue(String value) throws URISyntaxException {
         this.value = new URI(value);
+    }
+
+    @JsonIgnore
+    public URI getURI() {
+        return value;
     }
 
     @Override

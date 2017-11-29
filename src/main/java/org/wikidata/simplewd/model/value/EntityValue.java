@@ -63,6 +63,10 @@ public class EntityValue implements Value {
         return claims.stream().filter(claim -> claim.getProperty().equals(property)).map(Claim::getValue);
     }
 
+    public boolean hasValueFor(String property) {
+        return claims.stream().anyMatch(claim -> claim.getProperty().equals(property));
+    }
+
     public void addClaim(Claim claim) {
         if (claim.getProperty().equals("@type")) {
             if (claim.getValue() instanceof ConstantValue) {
