@@ -137,6 +137,7 @@ public class TypeMapper implements ItemIdSnakMapper {
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q2393314"), Arrays.asList("Organization", "PerformingGroup", "DanceGroup"));
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q2416217"), Arrays.asList("Organization", "PerformingGroup", "TheaterGroup"));
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q3305213"), Arrays.asList("CreativeWork", "VisualArtwork", "Painting"));
+        SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q3331189"), Collections.singletonList("CreativeWork")); //Edition
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q3464665"), Arrays.asList("CreativeWork", "CreativeWorkSeason", "TVSeason")); //TV season
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q1137809"), Arrays.asList("Place", "CivicStructure", "GovernmentBuilding", "Embassy"));
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q4438121"), Arrays.asList("Organization", "SportsOrganization"));

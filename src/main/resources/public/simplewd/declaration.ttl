@@ -134,6 +134,10 @@ swd:CreativeWork a sh:NodeShape ;
         ) ;
     ] ;
     sh:property [
+        sh:path schema:citation ;
+        sh:shape swd:CreativeWork ;
+    ] ;
+    sh:property [
         sh:path schema:creator ;
         sh:or (
             [
@@ -145,12 +149,48 @@ swd:CreativeWork a sh:NodeShape ;
         ) ;
     ] ;
     sh:property [
+        sh:path schema:datePublished ;
+        sh:or (
+            [
+                sh:datatype xsd:dateTime
+            ]
+            [
+                sh:datatype xsd:date
+            ]
+            [
+                sh:datatype xsd:gYearMonth
+            ]
+            [
+                sh:datatype xsd:gYear
+            ]
+        ) ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
         sh:path schema:editor ;
         sh:shape swd:Person ;
     ] ;
     sh:property [
+        sh:path schema:exampleOfWork ;
+        sh:shape swd:CreativeWork ;
+    ] ;
+    sh:property [
+        sh:path schema:fileFormat ;
+        sh:datatype xsd:string ;
+        sh:pattern "^(application|audio|example|font|image|message|model|multipart|text|video)/[a-zA-Z0-9\-+.]+$" ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
         sh:path schema:genre ;
         sh:shape swd:Thing ;
+    ] ;
+    sh:property [
+        sh:path schema:hasPart ;
+        sh:shape swd:CreativeWork ;
+    ] ;
+    sh:property [
+        sh:path schema:inLanguage ;
+        sh:shape swd:Language ;
     ] ;
     sh:property [
         sh:path schema:isBasedOn ;
@@ -211,6 +251,10 @@ swd:CreativeWork a sh:NodeShape ;
                 sh:shape swd:Person
             ]
         ) ;
+    ] ;
+    sh:property [
+        sh:path schema:workExample ;
+        sh:shape swd:CreativeWork ;
     ] .
 
 
@@ -220,6 +264,10 @@ swd:Article a sh:NodeShape ;
         sh:path schema:articleBody ;
         sh:datatype rdf:langString ;
         sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:pagination ;
+        sh:datatype xsd:string ;
     ] .
 
 
@@ -313,6 +361,33 @@ swd:Episode a sh:NodeShape ;
     ] .
 
 
+swd:MediaObject a sh:NodeShape ;
+    sh:targetClass schema:MediaObject .
+
+
+swd:ImageObject a sh:NodeShape ;
+    sh:targetClass schema:ImageObject ;
+    sh:property [
+        sh:path schema:contentUrl ;
+        sh:datatype xsd:anyURI ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:height ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
+        sh:path schema:license ;
+        sh:shape swd:CreativeWork ;
+    ] ;
+    sh:property [
+        sh:path schema:width ;
+        sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
+    ] .
+
+
 swd:MusicComposition a sh:NodeShape ;
     sh:targetClass schema:MusicComposition ;
     sh:property [
@@ -351,7 +426,23 @@ swd:Movie a sh:NodeShape ;
 swd:PublicationIssue a sh:NodeShape ;
     sh:targetClass schema:PublicationIssue ;
     sh:property [
+        sh:path schema:pagination ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
         sh:path schema:issueNumber ;
+        sh:datatype xsd:string
+    ] .
+
+
+swd:PublicationVolume a sh:NodeShape ;
+    sh:targetClass schema:PublicationVolume ;
+    sh:property [
+        sh:path schema:pagination ;
+        sh:datatype xsd:string
+    ] ;
+    sh:property [
+        sh:path schema:volumeNumber ;
         sh:datatype xsd:string
     ] .
 
@@ -396,33 +487,8 @@ swd:GeoCoordinates a sh:NodeShape ;
     ] .
 
 
-swd:ImageObject a sh:NodeShape ;
-    sh:targetClass schema:ImageObject ;
-    sh:property [
-        sh:path schema:contentUrl ;
-        sh:datatype xsd:anyURI ;
-        sh:maxCount 1 ;
-    ] ;
-    sh:property [
-        sh:path schema:fileFormat ;
-        sh:datatype xsd:string ;
-        sh:pattern "^(application|audio|example|font|image|message|model|multipart|text|video)/[a-zA-Z0-9\-+.]+$" ;
-        sh:maxCount 1 ;
-    ] ;
-    sh:property [
-        sh:path schema:height ;
-        sh:datatype xsd:integer ;
-        sh:maxCount 1 ;
-    ] ;
-    sh:property [
-        sh:path schema:license ;
-        sh:shape swd:CreativeWork ;
-    ] ;
-    sh:property [
-        sh:path schema:width ;
-        sh:datatype xsd:integer ;
-        sh:maxCount 1 ;
-    ] .
+swd:Language a sh:NodeShape ;
+    sh:targetClass schema:Language .
 
 
 swd:Organization a sh:NodeShape ;

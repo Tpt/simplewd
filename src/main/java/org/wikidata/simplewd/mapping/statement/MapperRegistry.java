@@ -82,14 +82,16 @@ public class MapperRegistry {
         addTruthyMapping("P272", new SimpleItemIdSnakMapper("productionCompany"));
         addTruthyMapping("P275", new SimpleItemIdSnakMapper("license"));
         addTruthyMapping("P276", new SimpleItemIdSnakMapper("location"));
+        addTruthyMapping("P304", new SimpleStringSnakMapper("pagination", "([A-Z]|[1-9])\\d*((-|–|—)([A-Z]|[1-9])\\d*)?|[A-Za-z]*(\\d+[A-Za-z]*)?"));
         addTruthyMapping("P361", new SimpleItemIdSnakMapper("isPartOf"));
+        addTruthyMapping("P407", new SimpleItemIdSnakMapper("inLanguage"));
         addTruthyMapping("P433", new SimpleStringSnakMapper("issueNumber"));
         addTruthyMapping("P434", new ExternalIdentifierSnakMapper("http://musicbrainz.org/artist/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         addTruthyMapping("P435", new ExternalIdentifierSnakMapper("http://musicbrainz.org/work/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         addTruthyMapping("P436", new ExternalIdentifierSnakMapper("http://musicbrainz.org/release-group/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         addTruthyMapping("P453", new SimpleItemIdSnakMapper("roleName"));
         addRoleMapping("P463", "memberOf");
-        addTruthyMapping("P478", new SimpleStringSnakMapper("volumeNumber"));
+        addTruthyMapping("P478", new SimpleStringSnakMapper("volumeNumber", "[0-9A-Z\\-]+"));
         addTruthyMapping("P483", new SimpleItemIdSnakMapper("recordedAt"));
         addTruthyMapping("P495", new SimpleItemIdSnakMapper("countryOfOrigin"));
         addTruthyMapping("P527", new SimpleItemIdSnakMapper("hasPart"));
@@ -100,6 +102,7 @@ public class MapperRegistry {
         addTruthyMapping("P576", new TimeSnakMapper("dissolutionDate"));
         addTruthyMapping("P577", new TimeSnakMapper("datePublished"));
         addTruthyMapping("P625", new GlobeCoordinatesSnakMapper("geo"));
+        addTruthyMapping("P629", new SimpleItemIdSnakMapper("exampleOfWork"));
         addTruthyMapping("P646", new ExternalIdentifierSnakMapper("http://g.co/kg$1", "(/m/0[0-9a-z_]{2,6}|/m/01[0123][0-9a-z_]{5})"));
         addTruthyMapping("P655", new SimpleItemIdSnakMapper("translator"));
         addTruthyMapping("P674", new SimpleItemIdSnakMapper("character"));
@@ -107,6 +110,7 @@ public class MapperRegistry {
         addTruthyMapping("P734", new SimpleItemIdSnakMapper("familyName"));
         addTruthyMapping("P735", new SimpleItemIdSnakMapper("givenName"));
         addTruthyMapping("P740", new SimpleItemIdSnakMapper("foundingLocation"));
+        addTruthyMapping("P747", new SimpleItemIdSnakMapper("workExample"));
         addTruthyMapping("P767", new SimpleItemIdSnakMapper("contributor"));
         addTruthyMapping("P840", new SimpleItemIdSnakMapper("contentLocation"));
         addTruthyMapping("P856", new URIStatementMapper("url"));
@@ -123,6 +127,7 @@ public class MapperRegistry {
         addTruthyMapping("P1281", new ExternalIdentifierSnakMapper("http://www.flickr.com/places/info/$1", "[1-9][0-9]{0,9}"));
         addTruthyMapping("P1330", new ExternalIdentifierSnakMapper("http://musicbrainz.org/instrument/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         addTruthyMapping("P1407", new ExternalIdentifierSnakMapper("http://musicbrainz.org/series/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
+        addTruthyMapping("P1433", new SimpleItemIdSnakMapper("isPartOf"));
         addTruthyMapping("P1566", new ExternalIdentifierSnakMapper("http://sws.geonames.org/$1", "[1-9]\\d{0,8}"));
         addTruthyMapping("P1657", new SimpleItemIdSnakMapper("contentRating"));
         addTruthyMapping("P1716", new SimpleItemIdSnakMapper("brand"));
@@ -139,6 +144,7 @@ public class MapperRegistry {
         addTruthyMapping("P2013", new ExternalIdentifierSnakMapper("http://www.facebook.com/$1", "[A-Za-zА-Яа-яёäöüßЁ0-9.-]+"));
         addTruthyMapping("P2019", new ExternalIdentifierSnakMapper("http://www.allmovie.com/artist/$1", "p[1-9][0-9]*"));
         addTruthyMapping("P2037", new ExternalIdentifierSnakMapper("http://github.com/$1", "[A-Za-z0-9]([A-Za-z0-9\\-]{0,37}[A-Za-z0-9])?"));
+        addTruthyMapping("P2093", new NameAsStringSnakMapper("author", "Thing", "Person"));
         addTruthyMapping("P2205", new ExternalIdentifierSnakMapper("http://open.spotify.com/album/$1", "[0-9A-Za-z]{22}"));
         addTruthyMapping("P2207", new ExternalIdentifierSnakMapper("http://open.spotify.com/track/$1", "[0-9A-Za-z]{22}"));
         addTruthyMapping("P2397", new ExternalIdentifierSnakMapper("http://www.youtube.com/channel/$1", "UC([A-Za-z0-9_\\-]){22}"));

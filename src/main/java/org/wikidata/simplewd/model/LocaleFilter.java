@@ -38,11 +38,8 @@ public class LocaleFilter {
                 .map(value -> (LocaleStringValue) value)
                 .peek(value -> availableLocales.add(value.getLocale()))
                 .toArray(LocaleStringValue[]::new); //TODO: check if it is working
-        List<Locale> localesToUse = Locale.filter(priorityList, availableLocales);
-        if (localesToUse.isEmpty()) {
-            return Stream.empty();
-        }
-        return Stream.of(localeValues).filter(value -> value.getLocale().equals(localesToUse.get(0)));
+        Locale localeToUse = Locale.filter(priorityList, availableLocales).stream().findAny().orElse(MULTILINGUAL);
+        return Stream.of(localeValues).filter(value -> value.getLocale().equals(localeToUse));
     }
 
     public boolean isMultilingualAccepted() {

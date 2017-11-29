@@ -103,6 +103,7 @@ public class JsonLdBuilder {
                     }
                 } else {
                     if (propertyShape.isUniqueLang()) {
+                        propertyValues.put(property, null);
                         localeFilter.getBestValues(entity.getValues(property)).findAny()
                                 .ifPresent(value -> propertyValues.put(property, value));
                     } else {
