@@ -70,7 +70,7 @@ public class CommonsAPI {
                 for (JsonNode pageNode : queryNode.get("pages")) {
                     if (pageNode.isObject() && pageNode.has("imageinfo")) {
                         for (JsonNode infoNode : pageNode.get("imageinfo")) {
-                            EntityValue image = new EntityValue("http://commons.wikimedia.org/wiki/Special:FilePath/" + title);
+                            EntityValue image = new EntityValue("http://commons.wikimedia.org/wiki/Special:FilePath/" + title.replace(' ', '_'));
                             image.addType("ImageObject");
                             try {
                                 image.addClaim(new Claim("contentUrl", new URI(infoNode.get("url").asText())));
