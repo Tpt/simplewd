@@ -111,7 +111,7 @@ public class ItemMapper {
         try {
             return new LocaleStringValue(value.getText(), WikimediaLanguageCodes.getLanguageCode(value.getLanguageCode()));
         } catch (IllegalArgumentException e) {
-            LOGGER.warn(e.getMessage());
+            //TODO: LOGGER.warn(e.getMessage());
             return new LocaleStringValue(value.getText(), value.getLanguageCode());
         }
     }

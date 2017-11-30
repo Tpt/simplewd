@@ -286,7 +286,7 @@ swd:Book a sh:NodeShape ;
 
 
 swd:CreativeWorkSeason a sh:NodeShape ;
-    sh:targetClass schema:CreativeWorkSeries ;
+    sh:targetClass schema:CreativeWorkSeason ;
     sh:property swd:actor ;
     sh:property [
         sh:path schema:productionCompany ;
