@@ -20,11 +20,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
+import org.dataloader.DataLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.WikidataAPI;
 import org.wikidata.simplewd.model.Claim;
+import org.wikidata.simplewd.model.DataLoaderBuilder;
 import org.wikidata.simplewd.model.value.ConstantValue;
 import org.wikidata.wdtk.datamodel.helpers.Datamodel;
 import org.wikidata.wdtk.datamodel.interfaces.*;
@@ -32,6 +33,7 @@ import org.wikidata.wdtk.wikibaseapi.apierrors.MediaWikiApiErrorException;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -162,15 +164,62 @@ public class TypeMapper implements ItemIdSnakMapper {
         SCHEMA_TYPES.put(Datamodel.makeWikidataItemIdValue("Q27108230"), Arrays.asList("Place", "CivicStructure", "Organization", "LocalBusiness", "LodgingBusiness", "Campground"));
     }
 
-    private LoadingCache<ItemIdValue, ItemIdValue[]> superClassesCache = CacheBuilder.newBuilder()
+    private DataLoader<ItemIdValue, List<ItemIdValue>> superClassesLoader = DataLoaderBuilder.newDataLoader((itemIds ->
+            CompletableFuture.supplyAsync(() -> {
+                try {
+                    Map<String, EntityDocument> documents = WikidataAPI.getDataFetcher().getEntityDocuments(
+                            itemIds.stream().map(ItemIdValue::getId).toArray(String[]::new)
+                    );
+                    return itemIds.stream().map(itemId -> {
+                        EntityDocument document = documents.get(itemId.getId());
+                        if (document instanceof ItemDocument) {
+                            ItemDocument itemDocument = (ItemDocument) document;
+                            StatementGroup statementGroup = itemDocument.findStatementGroup("P279");
+                            if (statementGroup != null) {
+                                return statementGroup.getStatements().stream()
+                                        .map(Statement::getValue)
+                                        .flatMap(value -> {
+                                            if (value instanceof ItemIdValue) {
+                                                return Stream.of(((ItemIdValue) value));
+                                            } else {
+                                                return Stream.empty();
+                                            }
+                                        }).collect(Collectors.toList());
+                            }
+                        } else {
+                            LOGGER.error("Found something that is not an item from an item id: " + itemId.toString());
+                        }
+                        return Collections.<ItemIdValue>emptyList();
+                    }).collect(Collectors.toList());
+                } catch (MediaWikiApiErrorException e) {
+                    LOGGER.error("Wikidata API error: " + e.getMessage(), e);
+                    return itemIds.stream().map(itemId -> Collections.<ItemIdValue>emptyList()).collect(Collectors.toList());
+                }
+            })
+    ), 32768, 30);
+
+    private LoadingCache<ItemIdValue, Set<String>> classMappingCache = CacheBuilder.newBuilder()
             .maximumSize(16384) //TODO: configure?
             .expireAfterWrite(30, TimeUnit.DAYS)
-            .build(new CacheLoader<ItemIdValue, ItemIdValue[]>() {
+            .build(new CacheLoader<ItemIdValue, Set<String>>() {
                 @Override
-                public ItemIdValue[] load(ItemIdValue itemId) throws IOException {
-                    return retrieveSuperClasses(itemId);
+                public Set<String> load(ItemIdValue itemId) throws IOException {
+                    return getAllSuperClasses(itemId)
+                            .flatMap(itemIdV -> SCHEMA_TYPES.getOrDefault(itemIdV, Collections.emptyList()).stream())
+                            .collect(Collectors.toSet());
                 }
             });
+
+    private LoadingCache<ItemIdValue, Boolean> filteredClassesCache = CacheBuilder.newBuilder()
+            .maximumSize(16384) //TODO: configure?
+            .expireAfterWrite(30, TimeUnit.DAYS)
+            .build(new CacheLoader<ItemIdValue, Boolean>() {
+                @Override
+                public Boolean load(ItemIdValue itemId) throws IOException {
+                    return getAllSuperClasses(itemId).anyMatch(FILTERED_TYPES::contains);
+                }
+            });
+
 
     private TypeMapper() {
     }
@@ -186,75 +235,45 @@ public class TypeMapper implements ItemIdSnakMapper {
     }
 
     private Set<String> mapClass(ItemIdValue itemId) {
-        return getAllSuperClasses(itemId)
-                .flatMap(itemIdV -> SCHEMA_TYPES.getOrDefault(itemIdV, Collections.emptyList()).stream())
-                .collect(Collectors.toSet());
+        try {
+            return classMappingCache.get(itemId);
+        } catch (ExecutionException e) {
+            LOGGER.error(e.getMessage(), e);
+            return Collections.emptySet();
+        }
     }
 
     public boolean isFilteredClass(ItemIdValue itemId) {
-        return getAllSuperClasses(itemId)
-                .anyMatch(FILTERED_TYPES::contains);
+        try {
+            return filteredClassesCache.get(itemId);
+        } catch (ExecutionException e) {
+            LOGGER.error(e.getMessage(), e);
+            return false;
+        }
     }
 
     private Stream<ItemIdValue> getAllSuperClasses(ItemIdValue itemId) {
-        Set<ItemIdValue> alreadySeen = new HashSet<>();
-        Queue<ItemIdValue> toGet = new LinkedList<>();
-
-        alreadySeen.add(itemId);
-        toGet.add(itemId);
-
-        return Streams.stream(new Iterator<ItemIdValue>() {
-            @Override
-            public boolean hasNext() {
-                return !toGet.isEmpty();
-            }
-
-            @Override
-            public ItemIdValue next() {
-                ItemIdValue currentClass = toGet.poll();
-                for (ItemIdValue superClass : getSuperClasses(currentClass)) {
-                    if (!alreadySeen.contains(superClass)) {
-                        alreadySeen.add(superClass);
-                        toGet.add(superClass);
-                    }
-                }
-                return currentClass;
-            }
-        });
-    }
-
-    private ItemIdValue[] getSuperClasses(ItemIdValue itemId) {
+        CompletableFuture<Set<ItemIdValue>> superClasses = getAllSuperClasses(Collections.singleton(itemId), new HashSet<>());
+        superClassesLoader.dispatchAndJoin();
         try {
-            return superClassesCache.get(itemId);
-        } catch (ExecutionException e) {
+            return superClasses.get().stream();
+        } catch (InterruptedException | ExecutionException e) {
             LOGGER.error(e.getMessage(), e);
-            return new ItemIdValue[]{};
+            return Stream.empty();
         }
     }
 
-    private ItemIdValue[] retrieveSuperClasses(ItemIdValue itemId) {
-        try {
-            EntityDocument document = WikidataAPI.getDataFetcher().getEntityDocument(itemId.getId());
-            if (document instanceof ItemDocument) {
-                ItemDocument itemDocument = (ItemDocument) document;
-                StatementGroup statementGroup = itemDocument.findStatementGroup("P279");
-                if (statementGroup != null) {
-                    return statementGroup.getStatements().stream()
-                            .map(Statement::getValue)
-                            .flatMap(value -> {
-                                if (value instanceof ItemIdValue) {
-                                    return Stream.of(((ItemIdValue) value));
-                                } else {
-                                    return Stream.empty();
-                                }
-                            }).toArray(ItemIdValue[]::new);
-                }
-            } else {
-                LOGGER.error("Found something that is not an item from an item id: " + itemId.toString());
+    private CompletableFuture<Set<ItemIdValue>> getAllSuperClasses(Set<ItemIdValue> classes, Set<ItemIdValue> seenClasses) {
+        return superClassesLoader.loadMany(new ArrayList<>(classes)).thenCompose(superClassesLists -> {
+            seenClasses.addAll(classes);
+            Set<ItemIdValue> superClasses = superClassesLists.stream()
+                    .flatMap(Collection::stream)
+                    .filter(superClass -> !seenClasses.contains(superClass))
+                    .collect(Collectors.toSet());
+            if (superClasses.isEmpty()) {
+                return CompletableFuture.completedFuture(seenClasses);
             }
-        } catch (MediaWikiApiErrorException e) {
-            LOGGER.error("Wikidata API error: " + e.getMessage(), e);
-        }
-        return new ItemIdValue[]{};
+            return getAllSuperClasses(superClasses, seenClasses);
+        });
     }
 }
