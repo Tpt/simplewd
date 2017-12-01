@@ -138,6 +138,10 @@ swd:CreativeWork a sh:NodeShape ;
         sh:shape swd:CreativeWork ;
     ] ;
     sh:property [
+        sh:path schema:contentLocation ;
+        sh:shape swd:Place ;
+    ] ;
+    sh:property [
         sh:path schema:creator ;
         sh:or (
             [
@@ -203,6 +207,10 @@ swd:CreativeWork a sh:NodeShape ;
     sh:property [
         sh:path schema:license ;
         sh:shape swd:CreativeWork ;
+    ] ;
+    sh:property [
+        sh:path schema:locationCreated ;
+        sh:shape swd:Place ;
     ] ;
     sh:property [
         sh:path schema:material ;

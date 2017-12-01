@@ -71,6 +71,7 @@ public class MapperRegistry {
         addTruthyMapping("P175", new SimpleItemIdSnakMapper("byArtist"));
         addTruthyMapping("P176", new SimpleItemIdSnakMapper("provider"));
         addTruthyMapping("P186", new SimpleItemIdSnakMapper("material"));
+        addTruthyMapping("P195", new SimpleItemIdSnakMapper("isPartOf"));
         addTruthyMapping("P212", new ISBNSnakMapper());
         addTruthyMapping("P214", new ExternalIdentifierSnakMapper("http://viaf.org/viaf/$1", "[1-9]\\d(\\d{0,7}|\\d{17,20})"));
         addTruthyMapping("P229", new SimpleStringSnakMapper("iataCode", "[A-Z0-9]{2}"));
@@ -120,6 +121,7 @@ public class MapperRegistry {
         addTruthyMapping("P966", new ExternalIdentifierSnakMapper("http://musicbrainz.org/label/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         addTruthyMapping("P982", new ExternalIdentifierSnakMapper("http://musicbrainz.org/area/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
         addTruthyMapping("P1004", new ExternalIdentifierSnakMapper("http://musicbrainz.org/place/$1", "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
+        addTruthyMapping("P1071", new SimpleItemIdSnakMapper("locationCreated"));
         addTruthyMapping("P1113", new IntegerStatementMapper("numberOfEpisodes"));
         //TODO: P1191: firstPerformance move the statement to an Event using qualifiers
         addTruthyMapping("P1243", new SimpleStringSnakMapper("isrcCode", "[A-Z]{2}[A-Z0-9]{3}[0-9]{7}"));
