@@ -141,7 +141,7 @@ public class EntityRenderer extends HTMLRenderer {
                 ).withClass("mdc-card__horizontal-block");
                 article.getValue("image").map(v -> (EntityValue) v).ifPresent(desc ->
                         desc.getValue("contentUrl").ifPresent(url ->
-                                cardMain.with(img().withSrc(url.toString()).withClass("mdc-card__media-item")
+                                cardMain.with(img().withSrc(url.toString()).withClass("mdc-card__media-item--2x")
                                 )) //TODO: link to commons
                 );
                 return div(
