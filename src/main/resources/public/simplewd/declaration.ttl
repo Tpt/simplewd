@@ -317,6 +317,7 @@ swd:CreativeWorkSeason a sh:NodeShape ;
     sh:property [
         sh:path schema:numberOfEpisodes ;
         sh:datatype xsd:integer ;
+        sh:maxCount 1;
     ] ;
     sh:property [
         sh:path schema:productionCompany ;
@@ -357,10 +358,12 @@ swd:RadioSeries a sh:NodeShape ;
     sh:property [
         sh:path schema:numberOfEpisodes ;
         sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
     ] ;
     sh:property [
         sh:path schema:numberOfSeasons ;
         sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
     ] ;
     sh:property [
         sh:path schema:productionCompany ;
@@ -378,10 +381,12 @@ swd:TVSeries a sh:NodeShape ;
     sh:property [
         sh:path schema:numberOfEpisodes ;
         sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
     ] ;
     sh:property [
         sh:path schema:numberOfSeasons ;
         sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
     ] ;
     sh:property [
         sh:path schema:productionCompany ;
@@ -397,10 +402,12 @@ swd:VideoGameSeries a sh:NodeShape ;
     sh:property [
         sh:path schema:numberOfEpisodes ;
         sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
     ] ;
     sh:property [
         sh:path schema:numberOfSeasons ;
         sh:datatype xsd:integer ;
+        sh:maxCount 1 ;
     ] ;
     sh:property [
         sh:path schema:productionCompany ;
