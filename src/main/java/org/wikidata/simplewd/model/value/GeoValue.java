@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 import com.vividsolutions.jts.io.geojson.GeoJsonWriter;
@@ -39,14 +38,6 @@ public abstract class GeoValue implements Value {
 
     GeoValue(Geometry geometry) {
         this.geometry = geometry;
-    }
-
-    public static GeoValue buildGeoValue(String WKT) {
-        try {
-            return buildGeoValue(WKT_READER.read(WKT));
-        } catch (ParseException e) {
-            throw new IllegalArgumentException(WKT + " should be a valid Well-Known-Text string", e);
-        }
     }
 
     public static GeoValue buildGeoValue(Geometry geometry) {
