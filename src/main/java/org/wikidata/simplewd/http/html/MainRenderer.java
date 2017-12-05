@@ -29,7 +29,9 @@ public class MainRenderer extends HTMLRenderer {
                 p(join("Some examples of entities rendered in HTML: ", ul(
                         example("wd:Q42", "Douglas Adams"),
                         example("wd:Q192724", "Iron Man"),
-                        example("wd:Q1757", "Helsinki")
+                        example("wd:Q1757", "Helsinki"),
+                        example("wd:Q12418", "Mona Lisa"),
+                        example("wd:Q83186", "Romeo and Juliet")
                 )))
         ).withClass("mdc-card__supporting-text")).withClass("mdc-card");
         return super.render("SimpleWD", "/simplewd", content);
@@ -39,9 +41,9 @@ public class MainRenderer extends HTMLRenderer {
         return li(join(
                 a(name).withHref("/simplewd/v0/entity/" + id),
                 " ",
-                a(small("(JSON)")).withHref("/simplewd/v0/entity/" + id + "?format=json"),
+                a(small("(JSON)")).withHref("/simplewd/v0/entity/" + id + ".json"),
                 " ",
-                a(small("(JSON-LD)")).withHref("/simplewd/v0/entity/" + id + "?format=jsonld")
+                a(small("(JSON-LD)")).withHref("/simplewd/v0/entity/" + id + ".jsonld")
         ));
     }
 }

@@ -65,16 +65,26 @@ public class Main {
                 .get("/simplewd/entity/:id", ctx -> ctx.redirect("/simplewd/v0/entity/" + ctx.param("id")))
                 .get("/simplewd/v0/entity/:id", ctx -> {
                     LocaleFilter localeFilter = getLocaleFilter(ctx);
-                    switch (getResponseContentType(ctx)) {
+                    String id = ctx.param("id");
+                    if (id == null) {
+                        throw new HaltException(404, "You should provide an entity ID");
+                    }
+                    String type = null;
+                    if (id.contains(".")) {
+                        String[] parts = id.split("\\.");
+                        id = parts[0];
+                        type = parts[1];
+                    }
+                    switch (getResponseContentType(ctx, type)) {
                         case JSON_LD:
-                            ctx.json(main.getResourceAsJson(ctx.param("id"), localeFilter));
+                            ctx.json(main.getResourceAsJson(id, localeFilter));
                             ctx.contentType("application/ld+json");
                             break;
                         case JSON:
-                            ctx.json(main.getResourceAsJson(ctx.param("id"), localeFilter).getContent());
+                            ctx.json(main.getResourceAsJson(id, localeFilter).getContent());
                             break;
                         case HTML:
-                            ctx.html(main.getResourceAsHTML(ctx.param("id"), localeFilter));
+                            ctx.html(main.getResourceAsHTML(id, localeFilter));
                             break;
                     }
                 })
@@ -87,8 +97,7 @@ public class Main {
         return (port != null) ? Integer.valueOf(port) : 7000;
     }
 
-    private static ContentType getResponseContentType(Context ctx) {
-        String type = ctx.queryParam("format");
+    private static ContentType getResponseContentType(Context ctx, String type) {
         if (type != null && type.length() > 0) {
             switch (type) {
                 case "json-ld":
