@@ -171,6 +171,24 @@ swd:CreativeWork a sh:NodeShape ;
         sh:maxCount 1 ;
     ] ;
     sh:property [
+        sh:path schema:dateModified ;
+        sh:or (
+            [
+                sh:datatype xsd:dateTime
+            ]
+            [
+                sh:datatype xsd:date
+            ]
+            [
+                sh:datatype xsd:gYearMonth
+            ]
+            [
+                sh:datatype xsd:gYear
+            ]
+        ) ;
+        sh:maxCount 1 ;
+    ] ;
+    sh:property [
         sh:path schema:editor ;
         sh:shape swd:Person ;
     ] ;
@@ -181,7 +199,7 @@ swd:CreativeWork a sh:NodeShape ;
     sh:property [
         sh:path schema:fileFormat ;
         sh:datatype xsd:string ;
-        sh:pattern "^(application|audio|example|font|image|message|model|multipart|text|video)/[a-zA-Z0-9\-+.]+$" ;
+        sh:pattern "^(application|audio|example|font|image|message|model|multipart|text|video)/[a-zA-Z0-9-+.]+$" ;
         sh:maxCount 1 ;
     ] ;
     sh:property [
@@ -297,13 +315,23 @@ swd:CreativeWorkSeason a sh:NodeShape ;
     sh:targetClass schema:CreativeWorkSeason ;
     sh:property swd:actor ;
     sh:property [
+        sh:path schema:numberOfEpisodes ;
+        sh:datatype xsd:integer ;
+    ] ;
+    sh:property [
         sh:path schema:productionCompany ;
         sh:shape swd:Organization ;
     ] .
 
 
 swd:CreativeWorkSeries a sh:NodeShape ;
-    sh:targetClass schema:CreativeWorkSeries .
+    sh:targetClass schema:CreativeWorkSeries ;
+    sh:property [
+        sh:path schema:issn ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[0-9]{4}-[0-9]{3}[0-9X]$" ;
+        sh:maxCount 1 ;
+    ] .
 
 
 swd:MovieSeries a sh:NodeShape ;
@@ -327,6 +355,14 @@ swd:RadioSeries a sh:NodeShape ;
         sh:shape swd:Person ;
     ] ;
     sh:property [
+        sh:path schema:numberOfEpisodes ;
+        sh:datatype xsd:integer ;
+    ] ;
+    sh:property [
+        sh:path schema:numberOfSeasons ;
+        sh:datatype xsd:integer ;
+    ] ;
+    sh:property [
         sh:path schema:productionCompany ;
         sh:shape swd:Organization ;
     ] .
@@ -340,6 +376,14 @@ swd:TVSeries a sh:NodeShape ;
         sh:shape swd:Person ;
     ] ;
     sh:property [
+        sh:path schema:numberOfEpisodes ;
+        sh:datatype xsd:integer ;
+    ] ;
+    sh:property [
+        sh:path schema:numberOfSeasons ;
+        sh:datatype xsd:integer ;
+    ] ;
+    sh:property [
         sh:path schema:productionCompany ;
         sh:shape swd:Organization ;
     ] .
@@ -349,6 +393,14 @@ swd:VideoGameSeries a sh:NodeShape ;
     sh:property [
         sh:path schema:director ;
         sh:shape swd:Person ;
+    ] ;
+    sh:property [
+        sh:path schema:numberOfEpisodes ;
+        sh:datatype xsd:integer ;
+    ] ;
+    sh:property [
+        sh:path schema:numberOfSeasons ;
+        sh:datatype xsd:integer ;
     ] ;
     sh:property [
         sh:path schema:productionCompany ;
@@ -401,7 +453,7 @@ swd:MusicComposition a sh:NodeShape ;
     sh:property [
         sh:path schema:iswcCode ;
         sh:datatype xsd:string ;
-        sh:pattern "^T-[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]$" ;
+        sh:pattern "^T-[0-9]{3}\\.[0-9]{3}\\.[0-9]{3}-[0-9]$" ;
         sh:maxCount 1 ;
     ] .
 
@@ -470,6 +522,8 @@ swd:Event a sh:NodeShape ;
         sh:path schema:location ;
         sh:shape swd:Place ;
     ] ;
+    sh:property swd:startDate ;
+    sh:property swd:endDate ;
     sh:property [
         sh:path schema:sponsor ;
         sh:or (
@@ -530,7 +584,7 @@ swd:Organization a sh:NodeShape ;
     sh:property [
         sh:path schema:duns ;
         sh:datatype xsd:string ;
-        sh:pattern "^\d{9}$" ;
+        sh:pattern "^[0-9]{9}$" ;
         sh:maxCount 1 ;
     ] ;
     sh:property [
@@ -588,6 +642,10 @@ swd:Organization a sh:NodeShape ;
         ]
     ] ;
     sh:property [
+        sh:path schema:parentOrganization ;
+        sh:shape swd:Organization ;
+    ] ;
+    sh:property [
         sh:path schema:sponsor ;
         sh:or (
             [
@@ -597,6 +655,10 @@ swd:Organization a sh:NodeShape ;
                 sh:shape swd:Person
             ]
         ) ;
+    ] ;
+    sh:property [
+        sh:path schema:subOrganization ;
+        sh:shape swd:Organization ;
     ] .
 
 

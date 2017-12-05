@@ -84,6 +84,7 @@ public class MapperRegistry {
         addTruthyMapping("P275", new SimpleItemIdSnakMapper("license"));
         addTruthyMapping("P276", new SimpleItemIdSnakMapper("location"));
         addTruthyMapping("P304", new SimpleStringSnakMapper("pagination", "([A-Z]|[1-9])\\d*((-|–|—)([A-Z]|[1-9])\\d*)?|[A-Za-z]*(\\d+[A-Za-z]*)?"));
+        addTruthyMapping("P355", new SimpleItemIdSnakMapper("subOrganization"));
         addTruthyMapping("P361", new SimpleItemIdSnakMapper("isPartOf"));
         addTruthyMapping("P407", new SimpleItemIdSnakMapper("inLanguage"));
         addTruthyMapping("P433", new SimpleStringSnakMapper("issueNumber"));
@@ -102,6 +103,8 @@ public class MapperRegistry {
         addTruthyMapping("P571", new TimeSnakMapper("foundingDate")); //TODO: dateCreated
         addTruthyMapping("P576", new TimeSnakMapper("dissolutionDate"));
         addTruthyMapping("P577", new TimeSnakMapper("datePublished"));
+        addTruthyMapping("P580", new TimeSnakMapper("startDate"));
+        addTruthyMapping("P582", new TimeSnakMapper("endDate"));
         addTruthyMapping("P625", new GlobeCoordinatesSnakMapper("geo"));
         addTruthyMapping("P629", new SimpleItemIdSnakMapper("exampleOfWork"));
         addTruthyMapping("P646", new ExternalIdentifierSnakMapper("http://g.co/kg$1", "(/m/0[0-9a-z_]{2,6}|/m/01[0123][0-9a-z_]{5})"));
@@ -112,6 +115,7 @@ public class MapperRegistry {
         addTruthyMapping("P735", new SimpleItemIdSnakMapper("givenName"));
         addTruthyMapping("P740", new SimpleItemIdSnakMapper("foundingLocation"));
         addTruthyMapping("P747", new SimpleItemIdSnakMapper("workExample"));
+        addTruthyMapping("P749", new SimpleItemIdSnakMapper("parentOrganization"));
         addTruthyMapping("P767", new SimpleItemIdSnakMapper("contributor"));
         addTruthyMapping("P840", new SimpleItemIdSnakMapper("contentLocation"));
         addTruthyMapping("P856", new URIStatementMapper("url"));
