@@ -16,6 +16,7 @@
 
 package org.wikidata.simplewd.model.value;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
@@ -50,6 +51,12 @@ public abstract class GeoValue implements Value {
         } else {
             return new GeoShapeValue(geometry);
         }
+    }
+
+    @Override
+    @JsonIgnore
+    public Geometry getValue() {
+        return geometry;
     }
 
     @Override

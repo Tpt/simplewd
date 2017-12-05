@@ -39,6 +39,13 @@ public class LocaleStringValue implements Value {
         this(value, Locale.forLanguageTag(languageCode));
     }
 
+    @Override
+    @JsonProperty("value")
+    public String getValue() {
+        return value;
+    }
+
+    @Override
     @JsonIgnore
     public String getType() {
         return "rdf:langString";
@@ -55,7 +62,6 @@ public class LocaleStringValue implements Value {
     }
 
     @Override
-    @JsonProperty("value")
     public String toString() {
         return value;
     }

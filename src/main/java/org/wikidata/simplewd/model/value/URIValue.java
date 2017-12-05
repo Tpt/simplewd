@@ -38,7 +38,7 @@ public class URIValue implements Value {
     }
 
     @JsonIgnore
-    public URI getURI() {
+    public URI getValue() {
         return value;
     }
 

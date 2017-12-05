@@ -259,8 +259,8 @@ public class EntityRenderer extends HTMLRenderer {
     }
 
     private DomContent renderValue(CalendarValue value) {
-        Date date = value.getXMLGregorianCalendar().toGregorianCalendar().getTime();
-        QName datatype = value.getXMLGregorianCalendar().getXMLSchemaType();
+        Date date = value.getValue().toGregorianCalendar().getTime();
+        QName datatype = value.getValue().getXMLSchemaType();
         String serialization = value.toString();
         if (datatype.equals(DatatypeConstants.DATETIME)) {
             serialization = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, localeFilter.getBestLocale()).format(date);
@@ -317,7 +317,7 @@ public class EntityRenderer extends HTMLRenderer {
     private Optional<String> getWikipediaArticleURI(EntityValue entity) {
         return entity.getValues("sameAs").sorted().flatMap(value -> {
             if (value instanceof URIValue) {
-                URI uri = ((URIValue) value).getURI();
+                URI uri = ((URIValue) value).getValue();
                 if (uri.getHost().equals(localeFilter.getBestLocale().getLanguage() + ".wikipedia.org")) {
                     return Stream.of(uri.toString());
                 }

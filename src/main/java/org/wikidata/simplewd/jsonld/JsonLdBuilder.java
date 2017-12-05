@@ -86,7 +86,7 @@ public class JsonLdBuilder {
                             if (value instanceof LocaleStringValue) {
                                 valuesByLanguage.put(((LocaleStringValue) value).getLanguageCode(), value.toString());
                             } else {
-                                LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
+                                LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.getValue());
                             }
                         });
                         propertyValues.put(property, valuesByLanguage);
@@ -96,7 +96,7 @@ public class JsonLdBuilder {
                             if (value instanceof LocaleStringValue) {
                                 valuesByLanguage.computeIfAbsent(((LocaleStringValue) value).getLanguageCode(), k -> new ArrayList<>()).add(value.toString());
                             } else {
-                                LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.toString());
+                                LOGGER.warn("Value for a rdf:langString property that is not a language tagged string: " + value.getValue());
                             }
                         });
                         propertyValues.put(property, valuesByLanguage);
@@ -140,7 +140,7 @@ public class JsonLdBuilder {
                     } else {
                         boolean plainSerialization = propertyShape.getDatatypes().map(dts -> dts.size() == 1).orElse(false);
                         if (plainSerialization) {
-                            return Stream.of(value.toString());
+                            return Stream.of(value.getValue());
                         } else {
                             return Stream.of(value);
                         }
@@ -187,7 +187,7 @@ public class JsonLdBuilder {
         //We only do geo shape lookup for Places in order to avoid unneeded requests
         return entity.getValues("sameAs")
                 .map(v -> (URIValue) v)
-                .filter(uri -> uri.getURI().getHost().equals(localeFilter.getBestLocale().getLanguage() + ".wikipedia.org"))
+                .filter(uri -> uri.getValue().getHost().equals(localeFilter.getBestLocale().getLanguage() + ".wikipedia.org"))
                 .findAny()
                 .flatMap(uri -> {
                     try {

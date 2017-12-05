@@ -32,13 +32,18 @@ public class EntityIdValue implements Value {
     }
 
     @Override
+    @JsonProperty("id")
+    public Object getValue() {
+        return IRI;
+    }
+
+    @Override
     @JsonIgnore
     public String getType() {
         return "@id";
     }
 
     @Override
-    @JsonProperty("id")
     public String toString() {
         return IRI;
     }

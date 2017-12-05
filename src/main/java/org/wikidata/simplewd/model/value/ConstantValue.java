@@ -32,13 +32,18 @@ public class ConstantValue implements Value {
     }
 
     @Override
+    @JsonValue
+    public String getValue() {
+        return IRI;
+    }
+
+    @Override
     @JsonIgnore
     public String getType() {
         return "@id";
     }
 
     @Override
-    @JsonValue
     public String toString() {
         return IRI;
     }

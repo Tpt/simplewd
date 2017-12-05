@@ -90,6 +90,12 @@ public class EntityValue implements Value {
         addClaim(new Claim(property, value));
     }
 
+    @Override
+    public Object getValue() {
+        return IRI;
+    }
+
+    @Override
     public String getType() {
         return "@id";
     }

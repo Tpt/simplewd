@@ -30,13 +30,18 @@ public class StringValue implements Value {
     }
 
     @Override
+    @JsonProperty("value")
+    public String getValue() {
+        return value;
+    }
+
+    @Override
     @JsonProperty("type")
     public String getType() {
         return "xsd:string";
     }
 
     @Override
-    @JsonProperty("value")
     public String toString() {
         return value;
     }

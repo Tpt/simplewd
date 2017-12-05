@@ -17,12 +17,17 @@
 package org.wikidata.simplewd.model.value;
 
 public interface Value extends Comparable<Value> {
+    Object getValue();
+
     String getType();
 
+    @Override
     int hashCode();
 
+    @Override
     boolean equals(Object value);
 
+    @Override
     String toString();
 
     @Override
