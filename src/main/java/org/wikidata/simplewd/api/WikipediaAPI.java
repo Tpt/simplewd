@@ -23,12 +23,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.model.Claim;
+import org.wikidata.simplewd.model.value.CalendarValue;
 import org.wikidata.simplewd.model.value.EntityIdValue;
 import org.wikidata.simplewd.model.value.EntityValue;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Optional;
@@ -40,6 +45,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class WikipediaAPI {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WikipediaAPI.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final EntityIdValue WIKIPEDIA_LICENSE = new EntityIdValue("wd:Q14946043");
     private LoadingCache<String, Summary> summaryCache = CacheBuilder.newBuilder()
@@ -63,8 +69,21 @@ public class WikipediaAPI {
             Locale articleLocale = Locale.forLanguageTag(summary.getLanguageCode());
             entity.addClaim(new Claim("name", summary.getTitle(), articleLocale));
             entity.addClaim(new Claim("articleBody", summary.getExtract(), articleLocale));
-            entity.addClaim(new Claim("license", WIKIPEDIA_LICENSE));
+            entity.addClaim(new Claim("dateModified", new CalendarValue(summary.getTimestamp())));
             //TODO: inLanguage with the language object
+            entity.addClaim(new Claim("license", WIKIPEDIA_LICENSE));
+            summary.getImage().ifPresent(image -> {
+                EntityValue imageEntity = new EntityValue(image.getSource());
+                imageEntity.addType("ImageObject");
+                try {
+                    imageEntity.addClaim(new Claim("contentUrl", new URI(image.getSource())));
+                } catch (URISyntaxException e) {
+                    LOGGER.warn("Invalid file URI: " + image.getSource());
+                }
+                imageEntity.addClaim(new Claim("width", image.getWidth()));
+                imageEntity.addClaim(new Claim("height", image.getHeight()));
+                entity.addClaim(new Claim("image", imageEntity));
+            });
             return entity;
         } catch (ExecutionException e) {
             throw new IOException(e);
@@ -127,7 +146,7 @@ public class WikipediaAPI {
             return dir;
         }
 
-        public String getTimestamp() {
+        String getTimestamp() {
             return timestamp;
         }
     }

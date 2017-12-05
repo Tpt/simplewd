@@ -22,6 +22,7 @@ import j2html.tags.DomContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wikidata.simplewd.api.CommonsAPI;
+import org.wikidata.simplewd.api.WikipediaAPI;
 import org.wikidata.simplewd.model.*;
 import org.wikidata.simplewd.model.value.*;
 
@@ -45,11 +46,13 @@ public class EntityRenderer extends HTMLRenderer {
 
     private EntityLookup entityLookup;
     private CommonsAPI commonsAPI;
+    private WikipediaAPI wikipediaAPI;
     private LocaleFilter localeFilter;
 
-    public EntityRenderer(EntityLookup entityLookup, CommonsAPI commonsAPI) {
+    public EntityRenderer(EntityLookup entityLookup, CommonsAPI commonsAPI, WikipediaAPI wikipediaAPI) {
         this.entityLookup = entityLookup;
         this.commonsAPI = commonsAPI;
+        this.wikipediaAPI = wikipediaAPI;
     }
 
     public String render(EntityValue entity, LocaleFilter localeFilter) {
@@ -74,7 +77,7 @@ public class EntityRenderer extends HTMLRenderer {
 
         return super.render(nameString + " - SimpleWD", "", div(
                 Stream.concat(
-                        Stream.of(renderThingCard(entity)),
+                        Stream.of(renderThingCard(entity), renderWikipediaCard(entity)),
                         SCHEMA.getShapesForClasses(entity.getTypes())
                                 .filter(shape -> !shape.getName().equals("Thing"))
                                 .sorted(Comparator.comparing(ShaclSchema.NodeShape::getName))
@@ -109,20 +112,49 @@ public class EntityRenderer extends HTMLRenderer {
 
         List<ContainerTag> actions = new ArrayList<>();
         actions.add(a("Wikidata item").withHref(Namespaces.expand(entity.getIRI())));
-        entity.getValues("sameAs").sorted().forEach(value -> {
-            if (value instanceof URIValue) {
-                URI uri = ((URIValue) value).getURI();
-                if (uri.getHost().equals(localeFilter.getBestLocale().getLanguage() + ".wikipedia.org")) {
-                    actions.add(a("Wikipedia article").withHref(uri.toString()));
-                }
-            }
-        });
+        getWikipediaArticleURI(entity).ifPresent(uri -> actions.add(a("Wikipedia article").withHref(uri)));
         entity.getValue("url").ifPresent(url -> actions.add(a("Official website").withHref(url.toString())));
 
         return div(
                 cardHeader,
                 section(actions.stream().peek(action -> action.withClasses("mdc-button", "mdc-button--compact", "mdc-card__action")).toArray(DomContent[]::new)).withClass("mdc-card--actions")
         ).withClass("mdc-card");
+    }
+
+    private DomContent renderWikipediaCard(EntityValue entity) {
+        return getWikipediaArticleURI(entity).map(uri -> {
+            try {
+                EntityValue article = wikipediaAPI.getWikipediaArticle(uri);
+                ContainerTag cardMain = div(
+                        div(
+                                section(
+                                        h1(
+                                                article.getValue("name")
+                                                        .map(v -> simpleRender((LocaleStringValue) v))
+                                                        .orElse(text(article.getIRI()))
+                                        ).withClasses("mdc-card__title", "mdc-card__title--large")
+                                ).withClass("mdc-card__primary"),
+                                article.getValue("articleBody").map(text ->
+                                        section(simpleRender((LocaleStringValue) text)).withClass("mdc-card__supporting-text")
+                                ).orElse(div())
+                        )
+                ).withClass("mdc-card__horizontal-block");
+                article.getValue("image").map(v -> (EntityValue) v).ifPresent(desc ->
+                        desc.getValue("contentUrl").ifPresent(url ->
+                                cardMain.with(img().withSrc(url.toString()).withClass("mdc-card__media-item")
+                                )) //TODO: link to commons
+                );
+                return div(
+                        cardMain,
+                        section(
+                                a("Read").withHref(uri).withClasses("mdc-button", "mdc-button--compact", "mdc-card__action")
+                        ).withClass("mdc-card--actions")
+                ).withClass("mdc-card");
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                return div();
+            }
+        }).orElse(div());
     }
 
     private DomContent renderShapeCard(EntityValue entity, ShaclSchema.NodeShape shape) {
@@ -280,5 +312,17 @@ public class EntityRenderer extends HTMLRenderer {
 
     private DomContent renderValue(URIValue value) {
         return a(value.toString()).withHref(value.toString());
+    }
+
+    private Optional<String> getWikipediaArticleURI(EntityValue entity) {
+        return entity.getValues("sameAs").sorted().flatMap(value -> {
+            if (value instanceof URIValue) {
+                URI uri = ((URIValue) value).getURI();
+                if (uri.getHost().equals(localeFilter.getBestLocale().getLanguage() + ".wikipedia.org")) {
+                    return Stream.of(uri.toString());
+                }
+            }
+            return Stream.empty();
+        }).findAny();
     }
 }

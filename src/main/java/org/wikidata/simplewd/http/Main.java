@@ -41,17 +41,15 @@ public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private EntityLookup entityLookup;
-    private CommonsAPI commonsAPI;
-    private WikipediaAPI wikipediaAPI;
     private JsonLdBuilder jsonLdBuilder;
     private EntityRenderer entityRenderer;
 
     private Main() throws IOException {
         entityLookup = new WikidataAPI();
-        commonsAPI = new CommonsAPI();
-        wikipediaAPI = new WikipediaAPI();
+        CommonsAPI commonsAPI = new CommonsAPI();
+        WikipediaAPI wikipediaAPI = new WikipediaAPI();
         jsonLdBuilder = new JsonLdBuilder(entityLookup, commonsAPI, wikipediaAPI);
-        entityRenderer = new EntityRenderer(entityLookup, commonsAPI);
+        entityRenderer = new EntityRenderer(entityLookup, commonsAPI, wikipediaAPI);
     }
 
     public static void main(String[] args) throws IOException {
