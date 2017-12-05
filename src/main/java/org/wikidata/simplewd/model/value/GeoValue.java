@@ -23,12 +23,16 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
+import com.vividsolutions.jts.io.geojson.GeoJsonWriter;
+import com.vividsolutions.jts.io.gml2.GMLWriter;
 
 /**
  * @author Thomas Pellissier Tanon
  */
 public abstract class GeoValue implements Value {
 
+    private static final GeoJsonWriter GEOJSON_WRITER = new GeoJsonWriter();
+    private static final GMLWriter GML_WRITER = new GMLWriter();
     private static final WKTReader WKT_READER = new WKTReader();
     private static final WKTWriter WKT_WRITER = new WKTWriter();
     private Geometry geometry;
@@ -53,6 +57,21 @@ public abstract class GeoValue implements Value {
         }
     }
 
+    @JsonIgnore
+    public String toGeoJson() {
+        return GEOJSON_WRITER.write(geometry);
+    }
+
+    @JsonProperty("gml")
+    public String toGML() {
+        return GML_WRITER.write(geometry);
+    }
+
+    @JsonProperty("wkt")
+    public String toWKT() {
+        return WKT_WRITER.write(geometry);
+    }
+
     @Override
     @JsonIgnore
     public Geometry getValue() {
@@ -60,9 +79,8 @@ public abstract class GeoValue implements Value {
     }
 
     @Override
-    @JsonProperty("wkt")
     public String toString() {
-        return WKT_WRITER.write(geometry);
+        return toWKT();
     }
 
     @Override

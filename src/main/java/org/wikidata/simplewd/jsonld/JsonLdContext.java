@@ -51,6 +51,7 @@ public class JsonLdContext {
         BASIC_CONTEXT.put("year", "xsd:gYear");
 
         BASIC_CONTEXT.put("shape", Collections.singletonMap("@id", "geo"));
+        BASIC_CONTEXT.put("gml", idAndTypeMap("http://www.opengis.net/ont/geosparql#asGML", "http://www.opengis.net/ont/geosparql#gmlLiteral"));
         BASIC_CONTEXT.put("wkt", idAndTypeMap("http://www.opengis.net/ont/geosparql#asWKT", "http://www.opengis.net/ont/geosparql#wktLiteral"));
     }
 
