@@ -29,7 +29,8 @@ class HTMLRenderer {
                         meta().withCharset("utf-8"),
                         meta().withName("viewport").withContent("width=device-width,initial-scale=1"),
                         link().withRel("stylesheet").withHref("/simplewd/node_modules/material-components-web/dist/material-components-web.css"),
-                        link().withRel("stylesheet").withHref("/simplewd/main.css")
+                        link().withRel("stylesheet").withHref("/simplewd/main.css"),
+                        link().withRel("canonical").withHref("http://tools.wmflabs.org/simplewd")
                 ),
                 body(
                         header(
