@@ -35,7 +35,7 @@
         <junitVersion>4.12</junitVersion>
         <rdf4jVersion>2.2.2</rdf4jVersion>
         <slf4jVersion>1.7.25</slf4jVersion>
-        <wdtkVersion>0.7.0</wdtkVersion>
+        <wdtkVersion>0.8.0</wdtkVersion>
     </properties>
 
     <dependencies>
