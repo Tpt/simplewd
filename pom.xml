@@ -27,13 +27,13 @@
     <properties>
         <jdkVersion>1.8</jdkVersion>
         <commonsValidatorVersion>1.6</commonsValidatorVersion>
-        <graphqlVersion>6.0</graphqlVersion>
-        <guavaVersion>23.2-jre</guavaVersion>
-        <j2htmlVersion>1.2.0</j2htmlVersion>
-        <javalinVersion>0.5.3</javalinVersion>
+        <graphqlVersion>8.0</graphqlVersion>
+        <guavaVersion>25.0-jre</guavaVersion>
+        <j2htmlVersion>1.3.0</j2htmlVersion>
+        <javalinVersion>1.7.0</javalinVersion>
         <jtsVersion>1.14.0</jtsVersion>
         <junitVersion>4.12</junitVersion>
-        <rdf4jVersion>2.2.2</rdf4jVersion>
+        <rdf4jVersion>2.3.2</rdf4jVersion>
         <slf4jVersion>1.7.25</slf4jVersion>
         <wdtkVersion>0.8.0</wdtkVersion>
     </properties>
@@ -111,7 +111,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <id>assemble-all</id>
