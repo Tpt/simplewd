@@ -72,7 +72,7 @@ public class ItemMapper {
         itemDocument.getSiteLinks().values().stream()
                 .filter(siteLink -> sites.getGroup(siteLink.getSiteKey()).equals("wikipedia"))
                 .forEach(siteLink ->
-                        entity.addClaim(new Claim("sameAs", URI.create(sites.getSiteLinkUrl(siteLink).replace("https://", "http://"))))
+                        entity.addClaim(new Claim("sameAs", URI.create(sites.getSiteLinkUrl(siteLink))))
                 );
     }
 
