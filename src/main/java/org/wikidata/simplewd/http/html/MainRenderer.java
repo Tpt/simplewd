@@ -26,6 +26,7 @@ public class MainRenderer extends HTMLRenderer {
         ContainerTag content = div(section(
                 p(join("SimpleWD provides a simple REST API that exposes Wikidata content in ", a("JSON-LD").withHref("https://json-ld.org"), " using the ", a("schema.org").withHref("https://schema.org"), " vocabulary.")),
                 p(join("The API documentation is available ", a("here").withHref("/simplewd/swagger.html"), " and the source code and bug tracker ", a("on GitHub").withHref("https://github.com/Tpt/simplewd/"), ".")),
+                p(join("The ", a("SHACL").withHref("https://www.w3.org/TR/shacl/"), " file defining the data schema is available ", a("here").withHref("https://tools.wmflabs.org/simplewd/declaration.ttl"), ".")),
                 p(join("Some examples of entities rendered in HTML: ", ul(
                         example("wd:Q42", "Douglas Adams"),
                         example("wd:Q192724", "Iron Man"),
@@ -43,7 +44,13 @@ public class MainRenderer extends HTMLRenderer {
                 " ",
                 a(small("(JSON)")).withHref("/simplewd/v0/entity/" + id + ".json"),
                 " ",
-                a(small("(JSON-LD)")).withHref("/simplewd/v0/entity/" + id + ".jsonld")
+                a(small("(JSON-LD)")).withHref("/simplewd/v0/entity/" + id + ".jsonld"),
+                " ",
+                a(small("(Turtle)")).withHref("/simplewd/v0/entity/" + id + ".ttl"),
+                " ",
+                a(small("(N-Triples)")).withHref("/simplewd/v0/entity/" + id + ".nt"),
+                " ",
+                a(small("(RDF/XML)")).withHref("/simplewd/v0/entity/" + id + ".rdf")
         ));
     }
 }

@@ -21,7 +21,10 @@
         "description": "Returns a single entity",
         "produces": [
           "application/ld+json",
-          "application/json"
+          "application/json",
+          "text/turtle",
+          "application/n-triples",
+          "application/rdf+xml"
         ],
         "parameters": [
           {

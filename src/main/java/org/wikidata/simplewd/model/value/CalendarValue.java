@@ -31,6 +31,7 @@ import javax.xml.namespace.QName;
 public class CalendarValue implements Value {
 
     private static DatatypeFactory DATATYPE_FACTORY;
+
     static {
         try {
             DATATYPE_FACTORY = DatatypeFactory.newInstance();

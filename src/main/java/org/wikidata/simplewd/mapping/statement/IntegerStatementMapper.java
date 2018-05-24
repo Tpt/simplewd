@@ -38,7 +38,7 @@ class IntegerStatementMapper implements QuantitySnakMapper {
         if (!isNullOrZero(value.getLowerBound()) || !isNullOrZero(value.getUpperBound())) {
             throw new InvalidWikibaseValueException(value + " has not null precision bounds.");
         }
-        if(!value.getUnit().isEmpty()) {
+        if (!value.getUnit().isEmpty()) {
             throw new InvalidWikibaseValueException(value + " has a unit.");
         }
         try {
