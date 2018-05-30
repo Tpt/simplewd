@@ -75,7 +75,7 @@ public class CommonsAPI {
                                 EntityValue image = new EntityValue(imageURI.toString());
                                 image.addType("ImageObject");
                                 image.addClaim(new Claim("contentUrl", imageURI));
-                                image.addClaim(new Claim("fileFormat", infoNode.get("mime").asText()));
+                                image.addClaim(new Claim("encodingFormat", infoNode.get("mime").asText()));
                                 image.addClaim(new Claim("width", infoNode.get("width").asInt()));
                                 image.addClaim(new Claim("height", infoNode.get("height").asInt()));
 

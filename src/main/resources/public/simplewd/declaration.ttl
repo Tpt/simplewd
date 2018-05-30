@@ -197,7 +197,7 @@ swd:CreativeWork a sh:NodeShape ;
         sh:shape swd:CreativeWork ;
     ] ;
     sh:property [
-        sh:path schema:fileFormat ;
+        sh:path schema:encodingFormat ;
         sh:datatype xsd:string ;
         sh:pattern "^(application|audio|example|font|image|message|model|multipart|text|video)/[a-zA-Z0-9-+.]+$" ;
         sh:maxCount 1 ;
